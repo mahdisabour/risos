@@ -98,6 +98,27 @@ class CreateUser(graphene.Mutation):
         return CreateUser(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token)
 
 
+class CreatePatient(CreateUser):
+    role = graphene.String()
+    def mutate(self, info, username, password):
+        user = get_user_model()(
+            username=username,
+            email="",
+        )
+        user.set_password(password)
+        user.save()
+
+        profile_obj = Profile.objects.get(user=user.id)
+        token = get_token(user)
+        refresh_token = create_refresh_token(user)
+        profile_obj.role = "doctor"
+        print(profile_obj.role)
+        # phone_number = profile_obj.phone_number
+        # otp = OTP.objects.get(profile=profile_obj.id)
+        # otp_send(phone_number, otp.message)
+        return CreatePatient(user=user.id, profile=profile_obj.id, role=profile_obj.role, token=token, refresh_token=refresh_token)
+
+
 class ObtainJSONWebToken(graphql_jwt.JSONWebTokenMutation):
     profile = graphene.String()
 
@@ -125,5 +146,10 @@ class BaseMutation(graphene.ObjectType):
     verify_token = graphql_jwt.Verify.Field()
     refresh_token = graphql_jwt.Refresh.Field()
     create_user = CreateUser.Field()
+    create_patient = CreatePatient.Field()
     verify_user = VerifyUser.Field()
     request_otp = RequestOTP.Field()
+
+
+
+schema = graphene.Schema(mutation=BaseMutation)
