@@ -1,3 +1,4 @@
+import businessLogic.models as bModels
 from random import randint
 
 from django.conf import settings
@@ -6,6 +7,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from extendProfile.smshelper import otp_send
+
 
 active_roles = (
     ("doctor", "Doctor"),
@@ -58,11 +60,30 @@ def create_user_profile(sender, instance, created, **kwargs):
         profile.save()
 
 
+
+
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def save_user_profile(sender, instance, **kwargs):
     profile = Profile.objects.get(user=instance)
     profile.phone_number = instance.username
     instance.profile.save()
+
+
+
+@receiver(post_save, sender=Profile)
+def create_doctor(sender, instance, created, **kwargs):
+    if created:
+        if instance.role == 'doctor':
+            bModels.Doctor(related_profile=instance, rating=5, name=instance.user.username).save()
+    
+    if instance.role == 'patient':
+        print(instance.role)
+        bModels.Patient(related_profile=instance, name=instance.user.username).save()
+
+    if instance.role == 'lab':
+        bModels.Lab(related_profile=instance, name=instance.user.username, rating=5).save()
+
+
 
 
 @receiver(post_save, sender=Profile)
