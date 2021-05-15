@@ -35,6 +35,10 @@ class Doctor(models.Model):
 class Patient(models.Model):
     name = models.CharField(max_length=30)
     related_profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
+    pic1 = models.ImageField(blank=True, null=True)
+    pic2 = models.ImageField(blank=True, null=True)
+    pic3 = models.ImageField(blank=True, null=True)
+    pic4 = models.ImageField(blank=True, null=True)
     doctor = models.ManyToManyField(
         Doctor,
         through='Service',
