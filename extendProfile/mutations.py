@@ -9,6 +9,7 @@ from graphene_django.filter import DjangoFilterConnectionField
 from graphql_jwt.refresh_token.shortcuts import create_refresh_token
 from graphql_jwt.shortcuts import get_token
 from .models import *
+from graphene_file_upload.scalars import Upload
 
 
 # Graphene will automatically map the Category model's fields onto the CategoryNode.
@@ -81,8 +82,9 @@ class CreateUser(graphene.Mutation):
     class Arguments:
         username = graphene.String(required=True)
         password = graphene.String(required=True)
+        profile_pic = Upload(required=False)
 
-    def mutate(self, info, username, password):
+    def mutate(self, info, username, password, profile_pic):
         user = get_user_model()(
             username=username,
             email="",
@@ -93,6 +95,15 @@ class CreateUser(graphene.Mutation):
         profile_obj = Profile.objects.get(user=user.id)
         token = get_token(user)
         refresh_token = create_refresh_token(user)
+
+        # save profile picture
+        try:
+            # profile_obj.profile_pic.save(f'user:{profile_obj.role}.png', open(image_url, 'rb'))
+            profile_obj.profile_pic = profile_pic
+            profile_obj.save()
+        except Exception as e:
+            profile_obj.save()
+            print(e)
         # phone_number = profile_obj.phone_number
         # otp = OTP.objects.get(profile=profile_obj.id)
         # otp_send(phone_number, otp.message)

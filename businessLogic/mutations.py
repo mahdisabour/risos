@@ -1,3 +1,4 @@
+from graphene.types.inputobjecttype import InputObjectType
 from .models import Doctor, Patient
 from extendProfile.models import *
 from extendProfile.mutations import CreateUser
@@ -15,15 +16,23 @@ from graphene_file_upload.scalars import Upload
 
 
 
+class patientPics(InputObjectType):
+    smile_image = Upload(required=False)
+    full_smile_image = Upload(required=False)
+    side_image = Upload(required=False)
+    optional_image = Upload(required=False)
+
+
 
 class CreatePatient(CreateUser):
 
     class Arguments:
         username = graphene.String(required=True)
         profile_doctor_id = graphene.Int(required=True)
-        pic1 = graphene.
+        profile_pic = Upload(required=False)
+        patientPics = patientPics(required=False)
 
-    def mutate(self, info, username, profile_doctor_id):
+    def mutate(self, info, username, profile_doctor_id, profile_pic, patientPics):
         user = get_user_model()(
             username=username,
             email="",
@@ -35,11 +44,23 @@ class CreatePatient(CreateUser):
         token = get_token(user)
         refresh_token = create_refresh_token(user)
         profile_obj.role = "patient"
-        profile_obj.save()
+        try:
+            # profile_obj.profile_pic.save(f'user:{profile_obj.role}.png', open(image_url, 'rb'))
+            profile_obj.profile_pic = profile_pic
+            profile_obj.save()
+        except Exception as e:
+            profile_obj.save()
+            print(e)
 
-        patinet = Patient.objects.get(related_profile=profile_obj)
+
+        # assign some attr to patient to create order when patient create
+        patient = Patient.objects.get(related_profile=profile_obj)
+        patient._profile_doctor_id = profile_doctor_id
+        patient._patientPic = patientPics
+        patient.save()
+
         doctor = Doctor.objects.get(related_profile=Profile.objects.get(id=profile_doctor_id))
-        patinet.doctor.add(doctor)
+        patient.doctor.add(doctor)
         return CreatePatient(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token)
 
 
@@ -47,8 +68,9 @@ class CreateLab(CreateUser):
 
     class Arguments:
         username = graphene.String(required=True)
+        profile_pic = Upload(required=False)
 
-    def mutate(self, info, username):
+    def mutate(self, info, username, profile_pic):
         user = get_user_model()(
             username=username,
             email="",
@@ -60,7 +82,13 @@ class CreateLab(CreateUser):
         token = get_token(user)
         refresh_token = create_refresh_token(user)
         profile_obj.role = "lab"
-        profile_obj.save()
+        try:
+            # profile_obj.profile_pic.save(f'user:{profile_obj.role}.png', open(image_url, 'rb'))
+            profile_obj.profile_pic = profile_pic
+            profile_obj.save()
+        except Exception as e:
+            profile_obj.save()
+            print(e)
         return CreatePatient(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token)
 
 

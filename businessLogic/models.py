@@ -1,6 +1,9 @@
+from datetime import datetime, timedelta
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from treebeard.mp_tree import MP_Node
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 from extendProfile.models import Profile
 
@@ -35,10 +38,6 @@ class Doctor(models.Model):
 class Patient(models.Model):
     name = models.CharField(max_length=30)
     related_profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
-    pic1 = models.ImageField(blank=True, null=True)
-    pic2 = models.ImageField(blank=True, null=True)
-    pic3 = models.ImageField(blank=True, null=True)
-    pic4 = models.ImageField(blank=True, null=True)
     doctor = models.ManyToManyField(
         Doctor,
         through='Service',
@@ -77,8 +76,8 @@ class Service(models.Model):
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
-    expected_date = models.DateTimeField(blank=True, null=True)
-    actual_date = models.DateTimeField(blank=True, null=True)
+    expected_date = models.DateTimeField(blank=True, null=True, default=datetime.today() + timedelta(days=60))
+    actual_date = models.DateTimeField(blank=True, null=True, default=datetime.today() + timedelta(days=90))
     description = models.TextField(blank=True, null=True, max_length=500)
     STATUSES = (
         ('processing', 'Processing'),
@@ -115,3 +114,27 @@ class Invoice(models.Model):
 
     def __str__(self):
         return "Invoice #" + self.id
+
+
+
+@receiver(post_save, sender=Patient)
+def create_order(sender, instance, created, **kwargs):
+    if not created:
+        print(instance._profile_doctor_id)
+        patient = instance
+        doctor = Doctor.objects.get(related_profile=Profile.objects.get(id=instance._profile_doctor_id))
+        pics = instance._patientPic
+        smile_design = SmileDesignService(
+            smile_image=pics.smile_image,
+            full_smile_image=pics.full_smile_image,
+            side_image=pics.side_image,
+            optional_image=pics.optional_image
+        ).save()
+        service = Service(
+            related_doctor=doctor,
+            related_patient=patient,
+            related_smile_design=smile_design
+        ).save()
+        Order(related_service=service).save()
+        
+    

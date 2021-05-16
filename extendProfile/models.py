@@ -28,7 +28,7 @@ class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     role = models.CharField(max_length=120, choices=active_roles, default="doctor")
     full_name = models.CharField(max_length=20, blank=True, null=True)
-    profile_pic = models.ImageField(blank=True, null=True)
+    profile_pic = models.ImageField(upload_to='profile/', blank=True, null=True)
     STATUSES = (
         ('active', 'Active'),
         ('deactive', 'Deactive'),
@@ -78,7 +78,6 @@ def create_doctor(sender, instance, created, **kwargs):
             bModels.Doctor(related_profile=instance, rating=5, name=instance.user.username).save()
     
     if instance.role == 'patient':
-        print(instance.role)
         bModels.Patient(related_profile=instance, name=instance.user.username).save()
 
     if instance.role == 'lab':

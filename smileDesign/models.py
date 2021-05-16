@@ -46,7 +46,7 @@ class SmileDesignService(models.Model):
     optional_image = models.ImageField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
-    related_smile_type = models.ForeignKey(SmileType, on_delete=models.CASCADE)
+    related_smile_type = models.ForeignKey(SmileType, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return self.id
