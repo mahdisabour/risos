@@ -98,7 +98,6 @@ class CreateUser(graphene.Mutation):
 
         # save profile picture
         try:
-            # profile_obj.profile_pic.save(f'user:{profile_obj.role}.png', open(image_url, 'rb'))
             profile_obj.profile_pic = profile_pic
             profile_obj.save()
         except Exception as e:

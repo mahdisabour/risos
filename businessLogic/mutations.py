@@ -30,9 +30,9 @@ class CreatePatient(CreateUser):
         username = graphene.String(required=True)
         profile_doctor_id = graphene.Int(required=True)
         profile_pic = Upload(required=False)
-        patientPics = patientPics(required=False)
+        patient_pics = patientPics(required=False)
 
-    def mutate(self, info, username, profile_doctor_id, profile_pic, patientPics):
+    def mutate(self, info, username, profile_doctor_id, profile_pic, patient_pics):
         user = get_user_model()(
             username=username,
             email="",
@@ -55,8 +55,7 @@ class CreatePatient(CreateUser):
 
         # assign some attr to patient to create order when patient create
         patient = Patient.objects.get(related_profile=profile_obj)
-        patient._profile_doctor_id = profile_doctor_id
-        patient._patientPic = patientPics
+        patient._patient_pics = patient_pics
         patient.save()
 
         doctor = Doctor.objects.get(related_profile=Profile.objects.get(id=profile_doctor_id))

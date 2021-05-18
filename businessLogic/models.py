@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.db.models.fields import related
+from django.utils.functional import partition
 from treebeard.mp_tree import MP_Node
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -117,24 +119,32 @@ class Invoice(models.Model):
 
 
 
+# PatientPic
+class PatientPic(models.Model):
+    smile_image = models.ImageField(blank=True, null=True)
+    full_smile_image = models.ImageField(blank=True, null=True)
+    side_image = models.ImageField(blank=True, null=True)
+    optional_image = models.ImageField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="patientPics")
+
+
+
+
 @receiver(post_save, sender=Patient)
-def create_order(sender, instance, created, **kwargs):
+def create_patient_pic(sender, instance, created, **kwargs):
     if not created:
-        print(instance._profile_doctor_id)
-        patient = instance
-        doctor = Doctor.objects.get(related_profile=Profile.objects.get(id=instance._profile_doctor_id))
-        pics = instance._patientPic
-        smile_design = SmileDesignService(
-            smile_image=pics.smile_image,
-            full_smile_image=pics.full_smile_image,
-            side_image=pics.side_image,
-            optional_image=pics.optional_image
+        pics = instance._patient_pics
+        PatientPic(
+            smile_image=pics['smile_image'], 
+            full_smile_image=pics['full_smile_image'],
+            side_image=pics['side_image'],
+            optional_image=pics['optional_image'],
+            Patient=instance
         ).save()
-        service = Service(
-            related_doctor=doctor,
-            related_patient=patient,
-            related_smile_design=smile_design
-        ).save()
-        Order(related_service=service).save()
-        
-    
+
+
+
+
+
