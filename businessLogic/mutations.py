@@ -1,5 +1,5 @@
 from graphene.types.inputobjecttype import InputObjectType
-from .models import Doctor, Patient
+from .models import Doctor, Lab, Order, Patient, Service
 from extendProfile.models import *
 from extendProfile.mutations import CreateUser
 
@@ -92,8 +92,34 @@ class CreateLab(CreateUser):
 
 
 
+class CreateOrder(graphene.Mutation):
+    order = graphene.Field(String)
+    class Arguments:
+        expected_date = graphene.DateTime(required=False)
+        actual_date = graphene.DateTime(required=False)
+        finalized_lab_id = graphene.Int(required=True)
+        related_service_id = graphene.Int(required=False)
+
+    def mutate(self, info, expected_date, actual_date, finalized_lab_id, related_service_id):
+        lab = Lab.objects.get(id=finalized_lab_id)
+        service = None
+        try:
+            service = Service.objects.get(id=related_service_id)
+        except:
+            pass
+        order = Order(
+            expected_date=expected_date,
+            actual_date=actual_date,
+            finalized_lab=lab,
+            related_service=service
+        )
+        order.save()
+        return CreateOrder(order=order.id)
+
+
 
 
 class BusinessLogicMutations(graphene.ObjectType):
     create_lab = CreateLab.Field()
     create_patient = CreatePatient.Field()
+    create_order = CreateOrder.Field()

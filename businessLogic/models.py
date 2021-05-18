@@ -60,8 +60,7 @@ class Lab(models.Model):
     rating = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(10)])
 
     def __str__(self):
-        return self.name
-
+        return str(self.name)
 
 class Service(models.Model):
     related_doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
@@ -94,7 +93,7 @@ class Order(models.Model):
     related_service = models.ForeignKey(Service, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
-        return "Order #" + self.id
+        return "Order #" + str(self.id)
 
 
 class Invoice(models.Model):
@@ -115,7 +114,7 @@ class Invoice(models.Model):
     reciept_image = models.ImageField()
 
     def __str__(self):
-        return "Invoice #" + self.id
+        return "Invoice #" + str(self.id)
 
 
 

@@ -140,7 +140,3 @@ class BaseMutation(graphene.ObjectType):
     create_user = CreateUser.Field()
     verify_user = VerifyUser.Field()
     request_otp = RequestOTP.Field()
-
-
-
-# schema = graphene.Schema(mutation=BaseMutation)
