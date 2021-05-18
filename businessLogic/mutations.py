@@ -16,7 +16,7 @@ from graphene_file_upload.scalars import Upload
 
 
 
-class patientPics(InputObjectType):
+class patientPics(graphene.InputObjectType):
     smile_image = Upload(required=False)
     full_smile_image = Upload(required=False)
     side_image = Upload(required=False)
@@ -52,11 +52,11 @@ class CreatePatient(CreateUser):
             profile_obj.save()
             print(e)
 
-
         # assign some attr to patient to create order when patient create
         patient = Patient.objects.get(related_profile=profile_obj)
-        patient._patient_pics = patient_pics
-        patient.save()
+        if patient_pics:
+            patient._patient_pics = patient_pics
+            patient.save()
 
         doctor = Doctor.objects.get(related_profile=Profile.objects.get(id=profile_doctor_id))
         patient.doctor.add(doctor)

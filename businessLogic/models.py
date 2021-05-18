@@ -72,7 +72,7 @@ class Service(models.Model):
     related_smile_design = models.ForeignKey(SmileDesignService, blank=True, null=True, on_delete=models.CASCADE)
 
     def __str__(self):
-        return "Service #" + self.id
+        return "Service #" + str(self.id)
 
 
 class Order(models.Model):
