@@ -5,6 +5,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.core.validators import MaxLengthValidator
 
 from extendProfile.smshelper import otp_send
 
@@ -29,6 +30,13 @@ class Profile(models.Model):
     role = models.CharField(max_length=120, choices=active_roles, default="doctor")
     full_name = models.CharField(max_length=20, blank=True, null=True)
     profile_pic = models.ImageField(upload_to='profile/', blank=True, null=True)
+    GENDER = (
+        ('male', 'Male'),
+        ('female', 'Female'),
+        ('unknown', 'Unknown')
+    )
+    gender = models.CharField(max_length=10, choices=GENDER, null=True, blank=True)
+    age = models.IntegerField(validators=[MaxLengthValidator(100)], blank=True, null=True)
     STATUSES = (
         ('active', 'Active'),
         ('deactive', 'Deactive'),
