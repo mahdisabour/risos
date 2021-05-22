@@ -99,7 +99,7 @@ class Order(models.Model):
 class Invoice(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
-    related_service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    related_service = models.ForeignKey(Service, on_delete=models.CASCADE, blank=True, null=True)
     expected_date = models.DateTimeField(blank=True, null=True)
     actual_date = models.DateTimeField(blank=True, null=True)
     description = models.TextField(blank=True, null=True, max_length=500)
@@ -111,7 +111,7 @@ class Invoice(models.Model):
     status = models.CharField(max_length=20, choices=STATUSES, default="processing")
     related_order = models.ForeignKey(Order, on_delete=models.CASCADE)
     related_lab = models.ForeignKey(Lab, on_delete=models.CASCADE)
-    reciept_image = models.ImageField()
+    reciept_image = models.ImageField(blank=True, null=True)
 
     def __str__(self):
         return "Invoice #" + str(self.id)
@@ -142,6 +142,26 @@ def create_patient_pic(sender, instance, created, **kwargs):
             optional_image=pics['optional_image'],
             Patient=instance
         ).save()
+
+
+
+@receiver(post_save, sender=Order)
+def create_invoice(sender, instance, created, **kwargs):
+    if created:
+        order = instance
+        invoice = Invoice(
+            related_service=order.related_service,
+            expected_date=order.expected_date,
+            actual_date=order.actual_date,
+            description=order.description,
+            related_order=order,
+            related_lab=order.finalized_lab,
+        )
+        invoice.save()
+        instance._invoice = invoice.id
+        instance.save()
+
+
 
 
 

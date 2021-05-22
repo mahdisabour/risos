@@ -1,5 +1,6 @@
+from django.db.models import fields
 from graphene.types.inputobjecttype import InputObjectType
-from .models import Doctor, Lab, Order, Patient, Service
+from .models import Doctor, Invoice, Lab, Order, Patient, Service
 from extendProfile.models import *
 from extendProfile.mutations import CreateUser
 
@@ -13,6 +14,8 @@ from graphene_django.filter import DjangoFilterConnectionField
 from graphql_jwt.refresh_token.shortcuts import create_refresh_token
 from graphql_jwt.shortcuts import get_token
 from graphene_file_upload.scalars import Upload
+from graphene_django.forms.mutation import DjangoModelFormMutation
+from django import forms
 
 
 
@@ -92,15 +95,27 @@ class CreateLab(CreateUser):
 
 
 
+# class OrderType(DjangoObjectType):
+#     class Meta:
+#         model = Order
+
+
 class CreateOrder(graphene.Mutation):
     order = graphene.Field(String)
+    invoice = graphene.Field(String)
+    
     class Arguments:
-        expected_date = graphene.DateTime(required=False)
-        actual_date = graphene.DateTime(required=False)
-        finalized_lab_id = graphene.Int(required=True)
-        related_service_id = graphene.Int(required=False)
+        finalized_lab_id = graphene.Int()
+        related_service_id = graphene.Int()
+        expected_date = graphene.DateTime()
+        actual_date = graphene.DateTime()
 
-    def mutate(self, info, expected_date, actual_date, finalized_lab_id, related_service_id):
+    def mutate(self, 
+               info, 
+               finalized_lab_id, 
+               related_service_id, 
+               expected_date, 
+               actual_date):
         lab = Lab.objects.get(id=finalized_lab_id)
         service = None
         try:
@@ -114,7 +129,26 @@ class CreateOrder(graphene.Mutation):
             related_service=service
         )
         order.save()
-        return CreateOrder(order=order.id)
+        return CreateOrder(order=order.id, invoice=order._invoice)
+
+
+
+class InvoiceForm(forms.ModelForm):
+    class Meta:
+        model = Invoice
+        fields = '__all__'
+
+
+class InvoiceType(DjangoObjectType):
+    class Meta:
+        model = Invoice
+
+
+class CreateInvoice(DjangoModelFormMutation):
+    order = graphene.Field(InvoiceType)
+
+    class Meta:
+        form_class = InvoiceForm 
 
 
 
@@ -123,3 +157,4 @@ class BusinessLogicMutations(graphene.ObjectType):
     create_lab = CreateLab.Field()
     create_patient = CreatePatient.Field()
     create_order = CreateOrder.Field()
+    invoice_mutation = CreateInvoice.Field()
