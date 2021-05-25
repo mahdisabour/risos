@@ -1,0 +1,4 @@
+curl https://risos.liara.run/graphql/ \
+  -F operations='{ "query": "mutation ($profilePic: Upload!) { createPatient(profilePic: $profilePic username:\"174411492342\" profileDoctorId:38){profile} }", "variables": { "profilePic": null } }' \
+  -F map='{ "0": ["variables.profilePic"] }' \
+  -F 0=@test.png

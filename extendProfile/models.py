@@ -50,8 +50,8 @@ class Profile(models.Model):
     description = models.TextField(max_length=1000, blank=True, null=True)
     email = models.EmailField(max_length=40, blank=True, null=True)
 
-    def __str__(self):
-        return self.phone_number
+    # def __str__(self):
+    #     return self.phone_number
 
 
 class OTP(models.Model):
@@ -86,10 +86,12 @@ def create_doctor(sender, instance, created, **kwargs):
             bModels.Doctor(related_profile=instance, rating=5, name=instance.user.username).save()
     
     if instance.role == 'patient':
-        bModels.Patient(related_profile=instance, name=instance.user.username).save()
+        if not bModels.Patient.objects.filter(related_profile=instance).exists():
+            bModels.Patient(related_profile=instance, name=instance.user.username).save()
 
     if instance.role == 'lab':
-        bModels.Lab(related_profile=instance, name=instance.user.username, rating=5).save()
+        if not bModels.Lab.objects.filter(related_profile=instance).exists():
+            bModels.Lab(related_profile=instance, name=instance.user.username, rating=5).save()
 
 
 

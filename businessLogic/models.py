@@ -140,7 +140,7 @@ def create_patient_pic(sender, instance, created, **kwargs):
             full_smile_image=pics['full_smile_image'],
             side_image=pics['side_image'],
             optional_image=pics['optional_image'],
-            Patient=instance
+            patient=instance
         ).save()
 
 

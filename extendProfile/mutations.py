@@ -1,3 +1,4 @@
+from random import choice
 from businessLogic.models import Doctor, Patient
 import graphene
 import graphql_jwt
@@ -10,6 +11,9 @@ from graphql_jwt.refresh_token.shortcuts import create_refresh_token
 from graphql_jwt.shortcuts import get_token
 from .models import *
 from graphene_file_upload.scalars import Upload
+from django import forms
+from graphene_django.forms.mutation import DjangoModelFormMutation
+
 
 
 # Graphene will automatically map the Category model's fields onto the CategoryNode.
@@ -103,32 +107,37 @@ class CreateUser(graphene.Mutation):
         except Exception as e:
             profile_obj.save()
             print(e)
-        # phone_number = profile_obj.phone_number
-        # otp = OTP.objects.get(profile=profile_obj.id)
-        # otp_send(phone_number, otp.message)
         return CreateUser(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token)
 
 
 
+class UpdateProfile(graphene.Mutation):
+    status = graphene.String()
+    class Arguments:
+        id = graphene.Int(required=True)
+        profile_pic = Upload(required=False)
+        full_name = graphene.String(required=False)
+        gender = graphene.String(required=False)
+        age = graphene.Int(required=False)
+        status = graphene.String(required=False)
+        phone_number = graphene.String(required=False)
+        telephone_number = graphene.String(required=False)
+        address = graphene.String(required=False)
+        description = graphene.String(required=False)
+        email = graphene.String(required=False)
+
+    def mutate(self, info, **kwargs):
+        profile = Profile.objects.get(id=kwargs["id"])
+        for k, v in kwargs.items():
+            setattr(profile, k, v)
+        profile.save()
+        return UpdateProfile(status="success")
+
 
 class ObtainJSONWebToken(graphql_jwt.JSONWebTokenMutation):
     profile = graphene.String()
-
-    # ip = graphene.String()
-    # session = graphene.String()
-
-    # @classmethod
-    # def Field(cls, *args, **kwargs):
-    #     cls._meta.arguments.update({
-    #         'session': graphene.String()
-    #     })
-    #     return super().Field(*args, **kwargs)
-
     @classmethod
     def resolve(cls, root, info, **kwargs):
-        # request = info.context.request
-        # client_ip, is_routable = get_client_ip(request)
-        # session = kwargs['session']
         profile = Profile.objects.filter(user=info.context.user).first()
         return cls(profile=profile.id)
 
@@ -140,3 +149,4 @@ class BaseMutation(graphene.ObjectType):
     create_user = CreateUser.Field()
     verify_user = VerifyUser.Field()
     request_otp = RequestOTP.Field()
+    update_profile = UpdateProfile.Field()

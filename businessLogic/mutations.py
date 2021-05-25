@@ -1,6 +1,6 @@
 from django.db.models import fields
 from graphene.types.inputobjecttype import InputObjectType
-from .models import Doctor, Invoice, Lab, Order, Patient, Service
+from .models import Doctor, Invoice, Lab, Order, Patient, Service, create_invoice
 from extendProfile.models import *
 from extendProfile.mutations import CreateUser
 
@@ -17,6 +17,10 @@ from graphene_file_upload.scalars import Upload
 from graphene_django.forms.mutation import DjangoModelFormMutation
 from django import forms
 
+from django.core.files import File
+from django.core.files.temp import NamedTemporaryFile
+
+
 
 
 class patientPics(graphene.InputObjectType):
@@ -28,7 +32,6 @@ class patientPics(graphene.InputObjectType):
 
 
 class CreatePatient(CreateUser):
-
     class Arguments:
         username = graphene.String(required=True)
         profile_doctor_id = graphene.Int(required=True)
@@ -48,14 +51,15 @@ class CreatePatient(CreateUser):
         refresh_token = create_refresh_token(user)
         profile_obj.role = "patient"
         try:
-            # profile_obj.profile_pic.save(f'user:{profile_obj.role}.png', open(image_url, 'rb'))
+            # profile_obj.profile_pic.save(f'user:{profile_obj.role}.png', open(profile_pic, 'rb'))
             profile_obj.profile_pic = profile_pic
             profile_obj.save()
+
         except Exception as e:
             profile_obj.save()
-            print(e)
+            # print(e)
+            # return(CreatePatient(error=str(e)))
 
-        # assign some attr to patient to create order when patient create
         patient = Patient.objects.get(related_profile=profile_obj)
         if patient_pics:
             patient._patient_pics = patient_pics
@@ -92,12 +96,6 @@ class CreateLab(CreateUser):
             profile_obj.save()
             print(e)
         return CreatePatient(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token)
-
-
-
-# class OrderType(DjangoObjectType):
-#     class Meta:
-#         model = Order
 
 
 class CreateOrder(graphene.Mutation):
@@ -151,10 +149,36 @@ class CreateInvoice(DjangoModelFormMutation):
         form_class = InvoiceForm 
 
 
+class InvoiceInput(graphene.InputObjectType):
+    id = graphene.Int(required=True)
+    updated_at = graphene.DateTime(required=False)
+    related_service = graphene.Int(required=False)
+    expected_date = graphene.DateTime(required=False)
+    actual_date = graphene.DateTime(required=False)
+    description = graphene.String(required=False)
+    status = graphene.String(required=False)
+    related_order = graphene.Int(required=False)
+    related_lab = graphene.Int(required=False)
+    reciept_image = Upload(required=False)
+
+class UpdateInvoice(graphene.Mutation):
+    status = graphene.String()
+    class Arguments:
+        invoice_data = InvoiceInput()
+
+    def mutate(self, info, invoice_data=None):
+        invoice = Invoice.objects.get(id=invoice_data.id)
+        for k, v in invoice_data.items():
+            setattr(invoice, k, v)
+        invoice.save()
+        return UpdateInvoice(status="success")
+
+
 
 
 class BusinessLogicMutations(graphene.ObjectType):
     create_lab = CreateLab.Field()
     create_patient = CreatePatient.Field()
     create_order = CreateOrder.Field()
-    invoice_mutation = CreateInvoice.Field()
+    create_invoice = CreateInvoice.Field()
+    update_invoice = UpdateInvoice.Field()
