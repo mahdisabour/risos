@@ -65,7 +65,7 @@ class VerifyUser(graphene.Mutation):
     def mutate(self, info, username, otp_message):
         user_obj = User.objects.get(username=username)
         profile_obj = Profile.objects.get(user=user_obj.id)
-        related_otp = OTP.objects.filter(profile=profile_obj.id)
+        related_otp = OTP.objects.filter(profile=profile_obj.id, is_valid=True)
         for otp in related_otp:
             if otp.message == otp_message and otp.is_valid == True:
                 otp.valid = False
@@ -74,6 +74,21 @@ class VerifyUser(graphene.Mutation):
                 profile_obj.save()
                 return VerifyUser(status="success")
         return VerifyUser(status="failed")
+
+# change password
+class ChangePassword(graphene.Mutation):
+    status = graphene.String()
+
+    class Arguments:
+        profile_id = graphene.Int(required=True)
+        new_password = graphene.String(required=True)
+
+    def mutate(self, info, profile_id, new_password):
+        user = Profile.objects.get(id=profile_id).user
+        user.set_password(new_password)
+        user.save()
+        return ChangePassword(status="success")
+
 
 
 # CreateUser
@@ -86,12 +101,13 @@ class CreateUser(graphene.Mutation):
     class Arguments:
         username = graphene.String(required=True)
         password = graphene.String(required=True)
-        profile_pic = Upload(required=False)
+        email = graphene.String(required=False, default_value="")
 
-    def mutate(self, info, username, password, profile_pic):
+    def mutate(self, info, username, password, email):
+        print(email)
         user = get_user_model()(
             username=username,
-            email="",
+            email=email,
         )
         user.set_password(password)
         user.save()
@@ -99,14 +115,6 @@ class CreateUser(graphene.Mutation):
         profile_obj = Profile.objects.get(user=user.id)
         token = get_token(user)
         refresh_token = create_refresh_token(user)
-
-        # save profile picture
-        try:
-            profile_obj.profile_pic = profile_pic
-            profile_obj.save()
-        except Exception as e:
-            profile_obj.save()
-            print(e)
         return CreateUser(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token)
 
 
@@ -150,3 +158,4 @@ class BaseMutation(graphene.ObjectType):
     verify_user = VerifyUser.Field()
     request_otp = RequestOTP.Field()
     update_profile = UpdateProfile.Field()
+    change_password = ChangePassword.Field()

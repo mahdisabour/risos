@@ -29,7 +29,7 @@ class ServiceCategory(MP_Node):
 class Doctor(models.Model):
     name = models.CharField(max_length=30)
     related_profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
-    rating = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(10)])
+    rating = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(10)], default=5)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
 
@@ -57,7 +57,7 @@ class Lab(models.Model):
     related_profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
-    rating = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(10)])
+    rating = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(10)], default=5)
 
     def __str__(self):
         return str(self.name)

@@ -9,6 +9,9 @@ from django.core.validators import MaxLengthValidator
 
 from extendProfile.smshelper import otp_send
 
+from .tasks import disableOTP
+
+
 
 active_roles = (
     ("doctor", "Doctor"),
@@ -59,6 +62,13 @@ class OTP(models.Model):
     is_valid = models.BooleanField(default=True)
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, blank=True, null=True)
 
+    def __str__(self):
+        return f"{self.profile.user.username}"
+
+
+def otp_time_arrive(instance, *args, **kwargs):
+    disableOTP.apply_sync((instance,), countdown=120)
+
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -70,12 +80,12 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 
 
-
-@receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def save_user_profile(sender, instance, **kwargs):
-    profile = Profile.objects.get(user=instance)
-    profile.phone_number = instance.username
-    instance.profile.save()
+# @receiver(post_save, sender=settings.AUTH_USER_MODEL)
+# def save_user_profile(sender, instance, created, **kwargs):
+#     if created:
+#         profile = Profile.objects.get(user=instance)
+#         profile.phone_number = instance.username
+#         instance.profile.save()
 
 
 
@@ -83,7 +93,7 @@ def save_user_profile(sender, instance, **kwargs):
 def create_doctor(sender, instance, created, **kwargs):
     if created:
         if instance.role == 'doctor':
-            bModels.Doctor(related_profile=instance, rating=5, name=instance.user.username).save()
+            bModels.Doctor(related_profile=instance, name=instance.user.username).save()
     
     if instance.role == 'patient':
         if not bModels.Patient.objects.filter(related_profile=instance).exists():
@@ -91,7 +101,7 @@ def create_doctor(sender, instance, created, **kwargs):
 
     if instance.role == 'lab':
         if not bModels.Lab.objects.filter(related_profile=instance).exists():
-            bModels.Lab(related_profile=instance, name=instance.user.username, rating=5).save()
+            bModels.Lab(related_profile=instance, name=instance.user.username).save()
 
 
 
