@@ -129,6 +129,14 @@ class PatientPic(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="patientPics")
 
 
+class LabPic(models.Model):
+    pic1 = models.ImageField(blank=True, null=True, upload_to="labpics/")
+    pic2 = models.ImageField(blank=True, null=True, upload_to="labpics/")
+    pic3 = models.ImageField(blank=True, null=True, upload_to="labpics/")
+    pic4 = models.ImageField(blank=True, null=True, upload_to="labpics/")
+    pic5 = models.ImageField(blank=True, null=True, upload_to="labpics/")
+    pic6 = models.ImageField(blank=True, null=True, upload_to="labpics/")
+    lab = models.ForeignKey(Lab, on_delete=models.CASCADE, related_name="labPics")
 
 
 @receiver(post_save, sender=Patient)

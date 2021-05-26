@@ -1,6 +1,6 @@
 from django.db.models import fields
 from graphene.types.inputobjecttype import InputObjectType
-from .models import Doctor, Invoice, Lab, Order, Patient, Service, create_invoice
+from .models import Doctor, Invoice, Lab, LabPic, Order, Patient, Service, create_invoice
 from extendProfile.models import *
 from extendProfile.mutations import CreateUser
 
@@ -131,27 +131,25 @@ class CreateOrder(graphene.Mutation):
         return CreateOrder(order=order.id, invoice=order._invoice)
 
 
+# class InvoiceForm(forms.ModelForm):
+#     class Meta:
+#         model = Invoice
+#         fields = '__all__'
 
-class InvoiceForm(forms.ModelForm):
-    class Meta:
-        model = Invoice
-        fields = '__all__'
+# class InvoiceType(DjangoObjectType):
+#     class Meta:
+#         model = Invoice
 
+# class CreateInvoice(DjangoModelFormMutation):
+#     order = graphene.Field(InvoiceType)
 
-class InvoiceType(DjangoObjectType):
-    class Meta:
-        model = Invoice
+#     class Meta:
+#         form_class = InvoiceForm 
 
-
-class CreateInvoice(DjangoModelFormMutation):
-    order = graphene.Field(InvoiceType)
-
-    class Meta:
-        form_class = InvoiceForm 
 
 
 class InvoiceInput(graphene.InputObjectType):
-    id = graphene.Int(required=True)
+    id = graphene.ID(required=True)
     updated_at = graphene.DateTime(required=False)
     related_service = graphene.Int(required=False)
     expected_date = graphene.DateTime(required=False)
@@ -166,7 +164,6 @@ class UpdateInvoice(graphene.Mutation):
     status = graphene.String()
     class Arguments:
         invoice_data = InvoiceInput()
-
     def mutate(self, info, invoice_data=None):
         invoice = Invoice.objects.get(id=invoice_data.id)
         for k, v in invoice_data.items():
@@ -176,10 +173,36 @@ class UpdateInvoice(graphene.Mutation):
 
 
 
+class LabPicInput(graphene.InputObjectType):
+    lab_id = graphene.ID(required=True)
+    pic1 = Upload(required=False)
+    pic2 = Upload(required=False)
+    pic3 = Upload(required=False)
+    pic4 = Upload(required=False)
+    pic5 = Upload(required=False)
+    pic6 = Upload(required=False)
+
+class LabPicMutation(graphene.Mutation):
+    status = graphene.String()
+    class Arguments:
+        labpic_data = LabPicInput()
+    def mutate(seld, info, labpic_data=None):
+        if (LabPic.objects.filter(lab=Lab.objects.get(id=labpic_data.lab_id)).exists()):
+            lab_pic = LabPic.objects.get(lab=Lab.objects.get(id=labpic_data.lab_id)) 
+        else :
+            lab_pic = LabPic(lab=Lab.objects.get(id=labpic_data.lab_id))
+        
+        for k, v in labpic_data.items():
+            setattr(labpic_data, k, v)
+        lab_pic.save()
+        return LabPicMutation(status="success")
+        
+
+
 
 class BusinessLogicMutations(graphene.ObjectType):
     create_lab = CreateLab.Field()
     create_patient = CreatePatient.Field()
     create_order = CreateOrder.Field()
-    create_invoice = CreateInvoice.Field()
     update_invoice = UpdateInvoice.Field()
+    labpic_mutation = LabPicMutation.Field()

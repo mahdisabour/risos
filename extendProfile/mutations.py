@@ -122,12 +122,12 @@ class CreateUser(graphene.Mutation):
 class UpdateProfile(graphene.Mutation):
     status = graphene.String()
     class Arguments:
-        id = graphene.Int(required=True)
+        id = graphene.ID(required=True)
         profile_pic = Upload(required=False)
         full_name = graphene.String(required=False)
         gender = graphene.String(required=False)
         age = graphene.Int(required=False)
-        status = graphene.String(required=False)
+        status = graphene.String(required=False, default_value="freetrial")
         phone_number = graphene.String(required=False)
         telephone_number = graphene.String(required=False)
         address = graphene.String(required=False)
