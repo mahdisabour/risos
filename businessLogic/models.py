@@ -63,7 +63,7 @@ class Lab(models.Model):
         return str(self.name)
 
 class Service(models.Model):
-    related_doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
+    related_doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name="services")
     related_patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     category = models.ForeignKey(ServiceCategory, on_delete=models.SET_NULL, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
@@ -90,7 +90,7 @@ class Order(models.Model):
     )
     status = models.CharField(max_length=20, choices=STATUSES, default="processing")
     finalized_lab = models.ForeignKey(Lab, on_delete=models.SET_NULL, blank=True, null=True)
-    related_service = models.ForeignKey(Service, on_delete=models.CASCADE, blank=True, null=True)
+    related_service = models.ForeignKey(Service, on_delete=models.CASCADE, blank=True, null=True, related_name="orders")
 
     def __str__(self):
         return "Order #" + str(self.id)
@@ -109,7 +109,7 @@ class Invoice(models.Model):
         ('cancelled', 'Cancelled')
     )
     status = models.CharField(max_length=20, choices=STATUSES, default="processing")
-    related_order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    related_order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="invoices")
     related_lab = models.ForeignKey(Lab, on_delete=models.CASCADE)
     reciept_image = models.ImageField(blank=True, null=True)
 

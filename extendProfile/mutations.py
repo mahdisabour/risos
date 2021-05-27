@@ -75,6 +75,7 @@ class VerifyUser(graphene.Mutation):
                 return VerifyUser(status="success")
         return VerifyUser(status="failed")
 
+
 # change password
 class ChangePassword(graphene.Mutation):
     status = graphene.String()
@@ -135,6 +136,7 @@ class UpdateProfile(graphene.Mutation):
         email = graphene.String(required=False)
 
     def mutate(self, info, **kwargs):
+        print(type(kwargs["profile_pic"]))
         profile = Profile.objects.get(id=kwargs["id"])
         for k, v in kwargs.items():
             setattr(profile, k, v)

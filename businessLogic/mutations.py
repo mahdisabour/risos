@@ -131,20 +131,20 @@ class CreateOrder(graphene.Mutation):
         return CreateOrder(order=order.id, invoice=order._invoice)
 
 
-# class InvoiceForm(forms.ModelForm):
-#     class Meta:
-#         model = Invoice
-#         fields = '__all__'
+class ServiceForm(forms.ModelForm):
+    class Meta:
+        model = Service
+        fields = '__all__'
 
-# class InvoiceType(DjangoObjectType):
-#     class Meta:
-#         model = Invoice
+class ServiceType(DjangoObjectType):
+    class Meta:
+        model = Service
 
-# class CreateInvoice(DjangoModelFormMutation):
-#     order = graphene.Field(InvoiceType)
+class CreateService(DjangoModelFormMutation):
+    service = graphene.Field(ServiceType)
 
-#     class Meta:
-#         form_class = InvoiceForm 
+    class Meta:
+        form_class = ServiceForm 
 
 
 
@@ -206,3 +206,4 @@ class BusinessLogicMutations(graphene.ObjectType):
     create_order = CreateOrder.Field()
     update_invoice = UpdateInvoice.Field()
     labpic_mutation = LabPicMutation.Field()
+    create_service = CreateService.Field()
