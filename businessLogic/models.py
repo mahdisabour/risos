@@ -78,6 +78,7 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
     expected_date = models.DateTimeField(blank=True, null=True, default=datetime.today() + timedelta(days=60))
+    # should be checked
     actual_date = models.DateTimeField(blank=True, null=True, default=datetime.today() + timedelta(days=90))
     description = models.TextField(blank=True, null=True, max_length=500)
     STATUSES = (
@@ -100,6 +101,7 @@ class Invoice(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
     related_service = models.ForeignKey(Service, on_delete=models.CASCADE, blank=True, null=True)
+    # should be checked
     expected_date = models.DateTimeField(blank=True, null=True)
     actual_date = models.DateTimeField(blank=True, null=True)
     description = models.TextField(blank=True, null=True, max_length=500)
@@ -168,10 +170,4 @@ def create_invoice(sender, instance, created, **kwargs):
         invoice.save()
         instance._invoice = invoice.id
         instance.save()
-
-
-
-
-
-
 

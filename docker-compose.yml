@@ -1,0 +1,32 @@
+version: '3.7'
+
+services: 
+    risos:
+        build: 
+            context: .
+    
+    ports:
+        - "8000:8000"
+    environment: 
+        RESIS_HOST=redis
+    depends_on: 
+        - redis
+    
+
+    redis:
+        image: redis:latest
+        ports:
+            - "6379:6379"
+        
+    
+    celery:
+        restart: always
+        build:
+            context: .
+        command: celery -A bot worker --loglevel=debug --concurrency=8
+        
+
+
+volumes: 
+    static_volume:
+    

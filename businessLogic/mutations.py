@@ -18,7 +18,6 @@ from graphene_django.forms.mutation import DjangoModelFormMutation
 from django import forms
 
 from django.core.files import File
-from django.core.files.temp import NamedTemporaryFile
 
 
 
