@@ -120,25 +120,33 @@ class CreateUser(graphene.Mutation):
 
 
 
+class ProfileInput(graphene.InputObjectType):
+    profile_pic = Upload(required=False)
+    first_name = graphene.String(required=False)
+    last_name = graphene.String(required=False)
+    gender = graphene.String(required=False)
+    age = graphene.Int(required=False)
+    status = graphene.String(required=False, default_value="freetrial")
+    phone_number = graphene.String(required=False)
+    telephone_number = graphene.String(required=False)
+    address = graphene.String(required=False)
+    description = graphene.String(required=False)
+    email = graphene.String(required=False, default_value="")
+
+
+
 class UpdateProfile(graphene.Mutation):
     status = graphene.String()
     class Arguments:
         id = graphene.ID(required=True)
-        profile_pic = Upload(required=False)
-        full_name = graphene.String(required=False)
-        gender = graphene.String(required=False)
-        age = graphene.Int(required=False)
-        status = graphene.String(required=False, default_value="freetrial")
-        phone_number = graphene.String(required=False)
-        telephone_number = graphene.String(required=False)
-        address = graphene.String(required=False)
-        description = graphene.String(required=False)
-        email = graphene.String(required=False)
+        profile_input = ProfileInput()
 
-    def mutate(self, info, **kwargs):
-        print(type(kwargs["profile_pic"]))
-        profile = Profile.objects.get(id=kwargs["id"])
-        for k, v in kwargs.items():
+    def mutate(self, info, id, profile_input):
+        profile = Profile.objects.get(id=id)
+        print(profile.phone_number)
+        # print(profile_input)
+        for k, v in dict(profile_input).items():
+            print(k)
             setattr(profile, k, v)
         profile.save()
         return UpdateProfile(status="success")

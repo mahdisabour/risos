@@ -31,7 +31,8 @@ def random_with_N_digits():
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     role = models.CharField(max_length=120, choices=active_roles, default="doctor")
-    full_name = models.CharField(max_length=20, blank=True, null=True)
+    first_name = models.CharField(max_length=20, blank=True, null=True)
+    last_name = models.CharField(max_length=20, blank=True, null=True)
     profile_pic = models.ImageField(upload_to='profile/', blank=True, null=True)
     GENDER = (
         ('male', 'Male'),
@@ -79,29 +80,19 @@ def create_user_profile(sender, instance, created, **kwargs):
         profile.save()
 
 
-
-# @receiver(post_save, sender=settings.AUTH_USER_MODEL)
-# def save_user_profile(sender, instance, created, **kwargs):
-#     if created:
-#         profile = Profile.objects.get(user=instance)
-#         profile.phone_number = instance.username
-#         instance.profile.save()
-
-
-
 @receiver(post_save, sender=Profile)
-def create_doctor(sender, instance, created, **kwargs):
+def create_sub_user(sender, instance, created, **kwargs):
     if created:
         if instance.role == 'doctor':
-            bModels.Doctor(related_profile=instance, name=instance.user.username).save()
+            bModels.Doctor(related_profile=instance).save()
     
     if instance.role == 'patient':
         if not bModels.Patient.objects.filter(related_profile=instance).exists():
-            bModels.Patient(related_profile=instance, name=instance.user.username).save()
+            bModels.Patient(related_profile=instance).save()
 
     if instance.role == 'lab':
         if not bModels.Lab.objects.filter(related_profile=instance).exists():
-            bModels.Lab(related_profile=instance, name=instance.user.username).save()
+            bModels.Lab(related_profile=instance).save()
 
 
 

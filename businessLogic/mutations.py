@@ -2,7 +2,7 @@ from django.db.models import fields
 from graphene.types.inputobjecttype import InputObjectType
 from .models import Doctor, Invoice, Lab, LabPic, Order, Patient, Service, create_invoice
 from extendProfile.models import *
-from extendProfile.mutations import CreateUser
+from extendProfile.mutations import CreateUser, UpdateProfile
 
 import graphene
 import graphql_jwt
@@ -19,6 +19,8 @@ from django import forms
 
 from django.core.files import File
 
+from extendProfile.mutations import ProfileInput
+
 
 
 
@@ -32,102 +34,122 @@ class patientPics(graphene.InputObjectType):
 
 class CreatePatient(CreateUser):
     class Arguments:
-        username = graphene.String(required=True)
-        profile_doctor_id = graphene.Int(required=True)
-        profile_pic = Upload(required=False)
         patient_pics = patientPics(required=False)
+        phone_number = graphene.String(required=True)
+        name = graphene.String(required=False)
+        age = graphene.Int(required=False)
+        email = graphene.String(required=False, default_value="")
+        address = graphene.String(required=False)
+        description = graphene.String(required=False)
+        profile_doctor_id = graphene.Int(required=True)
 
-    def mutate(self, info, username, profile_doctor_id, profile_pic, patient_pics):
+    def mutate(self, info, **kwargs):
         user = get_user_model()(
-            username=username,
-            email="",
+            username=kwargs['phone_number'],
+            email=kwargs['email'],
         )
-        user.set_password(username)
+        user.set_password(kwargs['phone_number'])
         user.save()
 
         profile_obj = Profile.objects.get(user=user.id)
         token = get_token(user)
         refresh_token = create_refresh_token(user)
         profile_obj.role = "patient"
-        try:
-            # profile_obj.profile_pic.save(f'user:{profile_obj.role}.png', open(profile_pic, 'rb'))
-            profile_obj.profile_pic = profile_pic
-            print(type(profile_pic))
-            profile_obj.save()
-
-        except Exception as e:
-            profile_obj.save()
-            # print(e)
-            # return(CreatePatient(error=str(e)))
+        profile_obj.first_name = kwargs["name"]
+        profile_obj.age = kwargs["age"]
+        profile_obj.email = kwargs["email"]
+        profile_obj.address = kwargs["address"]
+        profile_obj.description = kwargs["description"]
+        profile_obj.save()
 
         patient = Patient.objects.get(related_profile=profile_obj)
-        if patient_pics:
-            patient._patient_pics = patient_pics
+        if kwargs["patient_pics"]:
+            patient._patient_pics = kwargs["patient_pics"]
             patient.save()
 
-        doctor = Doctor.objects.get(related_profile=Profile.objects.get(id=profile_doctor_id))
+        doctor = Doctor.objects.get(related_profile=Profile.objects.get(id=kwargs["profile_doctor_id"]))
         patient.doctor.add(doctor)
         return CreatePatient(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token)
 
 
 class CreateLab(CreateUser):
-
     class Arguments:
-        username = graphene.String(required=True)
-        profile_pic = Upload(required=False)
+        phone_number = graphene.String(required=True)
+        name = graphene.String(required=False)
+        telephone_number = graphene.String(required=False)
+        address = graphene.String(required=False)
+        description = graphene.String(required=False)
 
-    def mutate(self, info, username, profile_pic):
+
+    def mutate(self, info, **kwargs):
         user = get_user_model()(
-            username=username,
+            username=kwargs["phone_number"],
             email="",
         )
-        user.set_password(username)
+        user.set_password(kwargs["phone_number"])
         user.save()
 
         profile_obj = Profile.objects.get(user=user.id)
         token = get_token(user)
         refresh_token = create_refresh_token(user)
         profile_obj.role = "lab"
-        try:
-            # profile_obj.profile_pic.save(f'user:{profile_obj.role}.png', open(image_url, 'rb'))
-            profile_obj.profile_pic = profile_pic
-            profile_obj.save()
-        except Exception as e:
-            profile_obj.save()
-            print(e)
+        profile_obj.first_name = kwargs["name"]
+        profile_obj.telephone_number = kwargs["telephone_number"]
+        profile_obj.address = kwargs["address"]
+        profile_obj.description = kwargs["description"]
+        profile_obj.save()
         return CreatePatient(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token)
 
 
-class CreateOrder(graphene.Mutation):
-    order = graphene.Field(String)
-    invoice = graphene.Field(String)
+# class CreateOrder(graphene.Mutation):
+#     order = graphene.Field(String)
+#     invoice = graphene.Field(String)
     
-    class Arguments:
-        finalized_lab_id = graphene.Int()
-        related_service_id = graphene.Int()
-        expected_date = graphene.DateTime()
-        actual_date = graphene.DateTime()
+#     class Arguments:
+#         finalized_lab_id = graphene.Int()
+#         related_service_id = graphene.Int()
+#         expected_date = graphene.DateTime()
+#         actual_date = graphene.DateTime()
 
-    def mutate(self, 
-               info, 
-               finalized_lab_id, 
-               related_service_id, 
-               expected_date, 
-               actual_date):
-        lab = Lab.objects.get(id=finalized_lab_id)
-        service = None
-        try:
-            service = Service.objects.get(id=related_service_id)
-        except:
-            pass
-        order = Order(
-            expected_date=expected_date,
-            actual_date=actual_date,
-            finalized_lab=lab,
-            related_service=service
-        )
-        order.save()
-        return CreateOrder(order=order.id, invoice=order._invoice)
+#     def mutate(self, 
+#                info, 
+#                finalized_lab_id, 
+#                related_service_id, 
+#                expected_date, 
+#                actual_date):
+#         lab = Lab.objects.get(id=finalized_lab_id)
+#         service = None
+#         try:
+#             service = Service.objects.get(id=related_service_id)
+#         except:
+#             pass
+#         order = Order(
+#             expected_date=expected_date,
+#             actual_date=actual_date,
+#             finalized_lab=lab,
+#             related_service=service
+#         )
+#         order.save()
+#         return CreateOrder(order=order.id, invoice=order._invoice)
+
+
+
+
+class OrderForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = '__all__'
+
+class OrderType(DjangoObjectType):
+    class Meta:
+        model = Order
+
+class OrderMutation(DjangoModelFormMutation):
+    service = graphene.Field(OrderType)
+
+    class Meta:
+        form_class = OrderForm 
+
 
 
 class ServiceForm(forms.ModelForm):
@@ -202,7 +224,8 @@ class LabPicMutation(graphene.Mutation):
 class BusinessLogicMutations(graphene.ObjectType):
     create_lab = CreateLab.Field()
     create_patient = CreatePatient.Field()
-    create_order = CreateOrder.Field()
+    # create_order = CreateOrder.Field()
+    order_mutation = OrderMutation.Field()
     update_invoice = UpdateInvoice.Field()
     labpic_mutation = LabPicMutation.Field()
     create_service = CreateService.Field()

@@ -27,7 +27,6 @@ class ServiceCategory(MP_Node):
 
 
 class Doctor(models.Model):
-    name = models.CharField(max_length=30)
     related_profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
     rating = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(10)], default=5)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
@@ -38,22 +37,21 @@ class Doctor(models.Model):
 
 
 class Patient(models.Model):
-    name = models.CharField(max_length=30)
     related_profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
     doctor = models.ManyToManyField(
         Doctor,
         through='Service',
         through_fields=('related_patient', 'related_doctor'),
     )
+    patient_pic = models.ForeignKey("businessLogic.PatientPic", on_delete=models.CASCADE, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
 
     def __str__(self):
-        return self.name
+        return str(self.related_profile.phone_number)
 
 
 class Lab(models.Model):
-    name = models.CharField(max_length=30)
     related_profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
@@ -128,7 +126,6 @@ class PatientPic(models.Model):
     optional_image = models.ImageField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="patientPics")
 
 
 class LabPic(models.Model):
