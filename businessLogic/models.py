@@ -11,6 +11,7 @@ from extendProfile.models import Profile
 
 # Create your models here
 from smileDesign.models import SmileDesignService
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class ServiceCategory(MP_Node):
@@ -43,7 +44,7 @@ class Patient(models.Model):
         through='Service',
         through_fields=('related_patient', 'related_doctor'),
     )
-    patient_pic = models.ForeignKey("businessLogic.PatientPic", on_delete=models.CASCADE, blank=True, null=True)
+    patient_pic = models.OneToOneField("businessLogic.PatientPic", on_delete=models.CASCADE, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
 
@@ -58,7 +59,7 @@ class Lab(models.Model):
     rating = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(10)], default=5)
 
     def __str__(self):
-        return str(self.name)
+        return str(self.related_profile.first_name)
 
 class Service(models.Model):
     related_doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name="services")
@@ -70,6 +71,39 @@ class Service(models.Model):
 
     def __str__(self):
         return "Service #" + str(self.id)
+
+
+class ToothSevice(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+    
+
+
+class BadColorReason(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+    
+
+
+class Tooth(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
+    tooth_number = models.PositiveIntegerField(validators=[MinValueValidator(18), MaxValueValidator(48)])
+    tooth_service = models.ForeignKey(ToothSevice, on_delete=models.CASCADE, blank=True, null=True)
+    is_bad_color = models.BooleanField(default=False)
+    bad_color_reason = models.ForeignKey(BadColorReason, on_delete=models.CASCADE, blank=True, null=True)
+    related_service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="Teeth")
+
+    def __str__(self):
+        return self.tooth_service.name
 
 
 class Order(models.Model):
@@ -120,22 +154,27 @@ class Invoice(models.Model):
 
 # PatientPic
 class PatientPic(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at', blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at', blank=True, null=True)
     smile_image = models.ImageField(blank=True, null=True)
     full_smile_image = models.ImageField(blank=True, null=True)
     side_image = models.ImageField(blank=True, null=True)
     optional_image = models.ImageField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
 
 
 class LabPic(models.Model):
-    pic1 = models.ImageField(blank=True, null=True, upload_to="labpics/")
-    pic2 = models.ImageField(blank=True, null=True, upload_to="labpics/")
-    pic3 = models.ImageField(blank=True, null=True, upload_to="labpics/")
-    pic4 = models.ImageField(blank=True, null=True, upload_to="labpics/")
-    pic5 = models.ImageField(blank=True, null=True, upload_to="labpics/")
-    pic6 = models.ImageField(blank=True, null=True, upload_to="labpics/")
-    lab = models.ForeignKey(Lab, on_delete=models.CASCADE, related_name="labPics")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at', blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at', blank=True, null=True)
+    pic = models.ImageField(blank=True, null=True, upload_to="labpics/")
+    lab = models.OneToOneField(Lab, on_delete=models.CASCADE, related_name="labPics")
+    number = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(6)], blank=True, null=True)
+
+    class Meta:
+        unique_together = ('lab', 'number', )
+
+    def __str__(self):
+        return f"{self.lab.related_profile.first_name}: pic #{self.id}"
+
 
 
 @receiver(post_save, sender=Patient)
@@ -152,19 +191,19 @@ def create_patient_pic(sender, instance, created, **kwargs):
 
 
 
-@receiver(post_save, sender=Order)
-def create_invoice(sender, instance, created, **kwargs):
-    if created:
-        order = instance
-        invoice = Invoice(
-            related_service=order.related_service,
-            expected_date=order.expected_date,
-            actual_date=order.actual_date,
-            description=order.description,
-            related_order=order,
-            related_lab=order.finalized_lab,
-        )
-        invoice.save()
-        instance._invoice = invoice.id
-        instance.save()
+# @receiver(post_save, sender=Order)
+# def create_invoice(sender, instance, created, **kwargs):
+#     if created:
+#         order = instance
+#         invoice = Invoice(
+#             related_service=order.related_service,
+#             expected_date=order.expected_date,
+#             actual_date=order.actual_date,
+#             description=order.description,
+#             related_order=order,
+#             related_lab=order.finalized_lab,
+#         )
+#         invoice.save()
+#         instance._invoice = invoice.id
+#         instance.save()
 

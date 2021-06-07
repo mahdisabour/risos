@@ -143,11 +143,9 @@ class UpdateProfile(graphene.Mutation):
 
     def mutate(self, info, id, profile_input):
         profile = Profile.objects.get(id=id)
-        print(profile.phone_number)
-        # print(profile_input)
         for k, v in dict(profile_input).items():
-            print(k)
-            setattr(profile, k, v)
+            if dict(profile_input)[k]:
+                setattr(profile, k, v)
         profile.save()
         return UpdateProfile(status="success")
 
