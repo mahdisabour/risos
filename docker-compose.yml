@@ -2,19 +2,19 @@ version: '3.7'
 
 services: 
     risos:
-        build: 
-            context: .
+        image: risos
         command: > 
-            sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+            sh -c "python manage.py makemigrations && python -u manage.py migrate && python manage.py runserver 0.0.0.0:8000"
         ports:
             - "8000:8000"
         environment: 
-            - RESIS_HOST=redis
+            - REDIS_HOST=redis
         depends_on: 
             - redis
         volumes: 
             - static_volume:/home/app/web/staticfiles
-            - .:/home/web/app
+            - .:/home/app/web
+            - ./data/db.sqlite3:/home/app/web/data/db.sqlite3
     
     redis:
         image: redis:latest
@@ -23,11 +23,10 @@ services:
     
     celery:
         restart: always
-        build:
-            context: .
+        image: risos
         command: celery -A risos worker --loglevel=debug --concurrency=8
         volumes: 
-            - .:/home/web/app
+            - .:/home/app/web
         depends_on: 
             - redis
             - risos

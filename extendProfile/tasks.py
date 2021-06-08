@@ -1,9 +1,11 @@
 from risos.celery import app
 from django.conf import settings
-
+import extendProfile.models as eModels 
 
 
 @app.task
-def disableOTP(self, instance):
+def disableOTP(*args):
+    print("tiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiir")
+    instance = eModels.OTP.objects.get(id = args[0])
     instance.is_valid = False
     instance.save()
