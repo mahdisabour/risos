@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'businessLogic',
     'extendProfile',
     'smileDesign',
+    'notification',
     'graphql_jwt',
     'graphql_jwt.refresh_token.apps.RefreshTokenConfig',
     'corsheaders',

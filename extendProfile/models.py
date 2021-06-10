@@ -68,7 +68,6 @@ class OTP(models.Model):
 
 @receiver(post_save, sender=OTP)
 def otp_time_arrive(sender, instance, *args, **kwargs):
-    print("teeeeeeeeeeeeeeeeeeeeeeeeeeest")
     disableOTP.apply_async((instance.id, ), countdown=120)
 
 
