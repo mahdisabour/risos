@@ -13,6 +13,7 @@ class Query(BusinessLogicQuery, smileDesignQuery, extendProfileQuery, graphene.O
     # as we begin to add more apps to our project
     pass
 
+
 class Mutations(BaseMutation, BusinessLogicMutations, NotificationMutations, graphene.ObjectType):
     pass
 

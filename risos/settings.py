@@ -58,6 +58,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # own middleware
+    'risos.middlewares.customAuth.CustomAuthMiddleware',
 ]
 
 ROOT_URLCONF = 'risos.urls'
@@ -151,7 +153,7 @@ GRAPHENE = {
     "SCHEMA": "risos.schema.schema",
     'MIDDLEWARE':[
         'graphql_jwt.middleware.JSONWebTokenMiddleware',
-        ],
+    ],
 }
 GRAPHQL_JWT = {
     'JWT_VERIFY_EXPIRATION': True,

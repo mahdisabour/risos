@@ -14,7 +14,7 @@ services:
         volumes: 
             - static_volume:/home/app/web/staticfiles
             - .:/home/app/web
-            - ./data/db.sqlite3:/home/app/web/data/db.sqlite3
+            # - ./data/db.sqlite3:/home/app/web/data/db.sqlite3
     
     redis:
         image: redis:latest

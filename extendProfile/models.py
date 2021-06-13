@@ -29,7 +29,7 @@ def random_with_N_digits():
 
 # Create your models here.
 class Profile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
     role = models.CharField(max_length=120, choices=active_roles, default="doctor")
     first_name = models.CharField(max_length=20, blank=True, null=True)
     last_name = models.CharField(max_length=20, blank=True, null=True)
@@ -61,15 +61,15 @@ class Profile(models.Model):
 class OTP(models.Model):
     message = models.CharField(max_length=7, default=random_with_N_digits, blank=True, null=True)
     is_valid = models.BooleanField(default=True)
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, blank=True, null=True)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, blank=True, null=True, related_name="OTP")
 
     def __str__(self):
         return f"{self.profile.user.username}"
 
 @receiver(post_save, sender=OTP)
 def otp_time_arrive(sender, instance, *args, **kwargs):
-    disableOTP.apply_async((instance.id, ), countdown=120)
-
+    # disableOTP.apply_async((instance.id, ), countdown=120)
+    pass
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_user_profile(sender, instance, created, **kwargs):
