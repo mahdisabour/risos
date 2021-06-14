@@ -16,7 +16,7 @@ class CustomAuthMiddleware:
             token = http_token.split(" ")[-1]
             phone_number = get_payload(token)["username"]
             user = User.objects.get(username = phone_number)
-            if (user.is_authenticated):
+            if (user.is_authenticated and self.validDoctor(user)):
                 response = self.get_response(request)
             else:
                 response.status_code = 403
@@ -26,5 +26,8 @@ class CustomAuthMiddleware:
         return response
 
 
-    def validateUser(self, user):
-        pass
+    def validDoctor(self, user):
+        doctor = user.profile
+        if doctor.role == "doctor":
+            return True
+        return True
