@@ -10,6 +10,14 @@ class CustomAuthMiddleware:
     def __call__(self, request):
         # Code to be executed for each request before
         # the view (and later middleware) are called.
+
+        # for key, val in request.META.items():
+        #     print(key, ":", val, "===>", type(val))
+        
+        input = request.META.get("wsgi.input")
+        print((request.method))
+        print(request.session.keys())
+        # print((request.body))
         http_token = request.META.get("HTTP_TOKEN")
         response = HttpResponse()
         try:
@@ -23,6 +31,7 @@ class CustomAuthMiddleware:
         
         except:
             response.status_code = 403
+
         return response
 
 
