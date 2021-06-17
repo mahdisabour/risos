@@ -2,6 +2,7 @@ from django.db import models
 
 # Create your models here.
 from treebeard.mp_tree import MP_Node
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class SmileCategory(MP_Node):
@@ -50,3 +51,40 @@ class SmileDesignService(models.Model):
 
     def __str__(self):
         return self.id
+
+
+# class SmilePlot(models.Model):
+#     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+#     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
+#     related_smile_design = models.OneToOneField(SmileDesignService, on_delete=models.CASCADE, related_name="smile_plot")
+#     UNITS = {
+#         ("px","Pixel"),
+#         ("cm", "Centi Meter")
+#     }
+#     unit = models.CharField(max_length=50, choices=UNITS,default="px")
+    
+
+# class RectAngle(models.Model):
+#     x1 = models.FloatField()
+#     y1 = models.FloatField()
+#     x2 = models.FloatField()
+#     y2 = models.FloatField()
+
+
+# class OutRectangle(models.Model):
+#     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+#     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
+#     related_smile_plot = models.OneToOneField(SmilePlot, on_delete=models.CASCADE, related_name="out_rectangle")
+#     rect_angle = models.OneToOneField(RectAngle, on_delete=models.CASCADE)
+
+
+# class TeethCoordinate(models.Model):
+#     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+#     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
+#     teeth_number = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(5)])
+#     related_smile_plot = models.ForeignKey(OutRectangle, on_delete=models.CASCADE, related_name="teeth_cordinates")
+#     rect_angle = models.OneToOneField(RectAngle, on_delete=models.CASCADE)
+#     class Meta:
+#         unique_together = ('teeth_number', 'related_smile_plot', )
+
+

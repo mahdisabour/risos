@@ -3,6 +3,7 @@ from graphene.types.inputobjecttype import InputObjectType
 from .models import BadColorReason, Doctor, Invoice, Lab, LabPic, Order, Patient, Service, Tooth, ToothSevice
 from extendProfile.models import *
 from extendProfile.mutations import CreateUser, UpdateProfile
+from django.db.models import Q
 
 import graphene
 import graphql_jwt
@@ -22,14 +23,11 @@ from django.core.files import File
 from extendProfile.mutations import ProfileInput
 
 
-
-
 class patientPics(graphene.InputObjectType):
     smile_image = Upload(required=False)
     full_smile_image = Upload(required=False)
     side_image = Upload(required=False)
     optional_image = Upload(required=False)
-
 
 
 class CreatePatient(CreateUser):
@@ -67,7 +65,8 @@ class CreatePatient(CreateUser):
             patient._patient_pics = kwargs["patient_pics"]
             patient.save()
 
-        doctor = Doctor.objects.get(related_profile=Profile.objects.get(id=kwargs["profile_doctor_id"]))
+        doctor = Doctor.objects.get(
+            related_profile=Profile.objects.get(id=kwargs["profile_doctor_id"]))
         patient.doctor.add(doctor)
         return CreatePatient(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token)
 
@@ -100,15 +99,17 @@ class CreateLab(CreateUser):
         return CreatePatient(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token)
 
 
-# create order 
+# create order
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
         fields = '__all__'
 
+
 class OrderType(DjangoObjectType):
     class Meta:
         model = Order
+
 
 class CreateOrder(DjangoModelFormMutation):
     service = graphene.Field(OrderType)
@@ -120,7 +121,7 @@ class CreateOrder(DjangoModelFormMutation):
 
 class UpdateOrder(graphene.Mutation):
     status = graphene.String()
-    
+
     class Arguments:
         order_id = graphene.ID(required=True)
         expected_date = graphene.DateTime()
@@ -131,13 +132,13 @@ class UpdateOrder(graphene.Mutation):
         related_service = graphene.ID()
 
     def mutate(self, info, **kwargs):
-        order = Order.objects.get(id = kwargs["order_id"])
+        order = Order.objects.get(id=kwargs["order_id"])
         lab = None
         service = None
         if kwargs["finalized_lab"]:
-            lab = Lab.objects.get(id = kwargs["finalized_lab"])
+            lab = Lab.objects.get(id=kwargs["finalized_lab"])
         if kwargs["related_service"]:
-            service = Service.objects.get(id = kwargs["related_service"])
+            service = Service.objects.get(id=kwargs["related_service"])
         kwargs["finalized_lab"] = lab
         kwargs["related_service"] = service
         for k, v in kwargs.items():
@@ -147,28 +148,29 @@ class UpdateOrder(graphene.Mutation):
         return UpdateOrder(status="success")
 
 
-
 # create service
 class ServiceForm(forms.ModelForm):
     class Meta:
         model = Service
         fields = '__all__'
 
+
 class ServiceType(DjangoObjectType):
     class Meta:
         model = Service
+
 
 class CreateService(DjangoModelFormMutation):
     service = graphene.Field(ServiceType)
 
     class Meta:
-        form_class = ServiceForm 
+        form_class = ServiceForm
         exclude_fields = ("id", )
-
 
 
 class LabPicMutation(graphene.Mutation):
     status = graphene.String()
+
     class Arguments:
         pic_number = graphene.Int(required=True)
         lab_id = graphene.ID(required=True)
@@ -186,7 +188,6 @@ class LabPicMutation(graphene.Mutation):
         return LabPicMutation(status="success")
 
 
-
 class ToothMutation(graphene.Mutation):
     status = graphene.String()
 
@@ -202,12 +203,14 @@ class ToothMutation(graphene.Mutation):
         tooth_service = None
         bad_color_reason = None
         if kwargs["tooth_service"]:
-            tooth_service = ToothSevice.objects.get(name=kwargs["tooth_service"])
+            tooth_service = ToothSevice.objects.get(
+                name=kwargs["tooth_service"])
         if kwargs["bad_color_reason"]:
-            bad_color_reason = BadColorReason.objects.get(name=kwargs["bad_color_reason"])
+            bad_color_reason = BadColorReason.objects.get(
+                name=kwargs["bad_color_reason"])
         tooth = Tooth.objects.filter(
             tooth_number=kwargs["tooth_number"],
-            related_service=related_service    
+            related_service=related_service
         )
         if tooth.exists():
             tooth = tooth.first()
@@ -220,15 +223,76 @@ class ToothMutation(graphene.Mutation):
             tooth.save()
         else:
             tooth = Tooth(
-                tooth_number = kwargs["tooth_number"],
-                related_service = related_service,
-                is_bad_color = kwargs["is_bad_color"],
-                tooth_service = tooth_service,
+                tooth_number=kwargs["tooth_number"],
+                related_service=related_service,
+                is_bad_color=kwargs["is_bad_color"],
+                tooth_service=tooth_service,
                 bad_color_reason=bad_color_reason
             ).save()
         return ToothMutation(status="success")
 
 
+
+
+# class PatientNode(DjangoObjectType):
+#     class Meta:
+#         # Assume you have an Animal model defined with the following fields
+#         model = Patient
+#         filter_fields = ['related_profile__first_name',]
+#         interfaces = (relay.Node, )
+
+
+# class AnimalFilter(django_filters.FilterSet):
+#     # Do case-insensitive lookups on 'name'
+#     name = django_filters.CharFilter(lookup_expr=['iexact'])
+
+#     class Meta:
+#         model = Animal
+#         fields = ['name', 'genus', 'is_domesticated']
+
+
+# class Query(ObjectType):
+#     animal = relay.Node.Field(AnimalNode)
+#     # We specify our custom AnimalFilter using the filterset_class param
+#     all_animals = DjangoFilterConnectionField(AnimalNode,
+#                                               filterset_class=AnimalFilter)
+
+
+# search part
+class PatientType(DjangoObjectType):
+    class Meta:
+        model = Patient
+
+class FilterPatient(graphene.ObjectType):
+    filtered_patients = graphene.List(PatientType, name=graphene.String(
+        required=True), doctor_id=graphene.ID(required=True))
+
+    def resolve_filtered_patients(self, info, name, doctor_id):
+        filtered_patients = Patient.objects.filter(
+            (Q(related_profile__first_name__icontains=name) |
+             Q(related_profile__last_name__icontains=name)) &
+            Q(doctor__id=doctor_id)
+        )
+        return filtered_patients.all()
+
+
+class OrderType(DjangoObjectType):
+    class Meta:
+        model = Order
+
+
+class FilterOrderByPatient(graphene.ObjectType):
+    filtered_orders = graphene.List(OrderType, name=graphene.String(
+        required=True), doctor_id=graphene.ID(required=True))
+
+
+    def resolve_filtered_orders(self, info, name, doctor_id):
+        filtered_orders = Order.objects.filter(
+            (Q(related_service__related_patient__related_profile__first_name=name) |
+             Q(related_service__related_patient__related_profile__last_name=name)) &
+            Q(related_service__related_doctor__id=doctor_id)
+        )
+        return filtered_orders.all()
 
 
 class BusinessLogicMutations(graphene.ObjectType):
@@ -239,3 +303,6 @@ class BusinessLogicMutations(graphene.ObjectType):
     labpic_mutation = LabPicMutation.Field()
     create_service = CreateService.Field()
     tooth_mutation = ToothMutation.Field()
+
+
+    

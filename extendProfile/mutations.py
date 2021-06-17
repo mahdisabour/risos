@@ -46,7 +46,7 @@ class RequestOTP(graphene.Mutation):
 
     class Arguments:
         username = graphene.String(required=True)
-
+    @classmethod
     def mutate(self, info, username):
         user_obj = User.objects.get(username=username)
         profile_obj = Profile.objects.get(user=user_obj.id)
@@ -81,15 +81,29 @@ class ChangePassword(graphene.Mutation):
     status = graphene.String()
 
     class Arguments:
-        profile_id = graphene.Int(required=True)
+        username = graphene.Int(required=True)
         new_password = graphene.String(required=True)
 
-    def mutate(self, info, profile_id, new_password):
-        user = Profile.objects.get(id=profile_id).user
+    def mutate(self, info, username, new_password):
+        user = User.objects.get(username=username)
         user.set_password(new_password)
         user.save()
         return ChangePassword(status="success")
 
+
+
+class ForgetPass(graphene.Mutation):
+    status = graphene.String()
+
+    class Arguments:
+        phone_number = graphene.String(required=True)
+
+    def mutate(self, info, phone_number):
+        user = User.objects.filter(username=phone_number) 
+        if user.exists():
+            RequestOTP.mutate(info=info, username=phone_number)
+            return ForgetPass(status="Success")
+        return ForgetPass(status="Failed")
 
 
 # CreateUser
@@ -167,3 +181,4 @@ class BaseMutation(graphene.ObjectType):
     request_otp = RequestOTP.Field()
     update_profile = UpdateProfile.Field()
     change_password = ChangePassword.Field()
+    forget_pass = ForgetPass.Field()

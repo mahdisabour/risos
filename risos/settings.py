@@ -153,7 +153,7 @@ GRAPHENE = {
     "SCHEMA": "risos.schema.schema",
     'MIDDLEWARE':[
         'graphql_jwt.middleware.JSONWebTokenMiddleware',
-        'risos.middlewares.grapheneMiddleware.CustomAuth'
+        # 'risos.middlewares.grapheneMiddleware.CustomAuth'
     ],
 }
 GRAPHQL_JWT = {
