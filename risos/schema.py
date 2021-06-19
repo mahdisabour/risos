@@ -5,6 +5,7 @@ from businessLogic.schema import BusinessLogicQuery
 from extendProfile.mutations import BaseMutation
 from businessLogic.mutations import BusinessLogicMutations
 from notification.mutations import NotificationMutations
+from smileDesign.mutations import SmileDesignMutations
 from extendProfile.schema import extendProfileQuery
 from smileDesign.schema import smileDesignQuery
 from businessLogic.mutations import FilterPatient, FilterOrderByPatient
@@ -16,7 +17,7 @@ class Query(BusinessLogicQuery, smileDesignQuery, extendProfileQuery, FilterPati
     pass
 
 
-class Mutations(BaseMutation, BusinessLogicMutations, NotificationMutations, graphene.ObjectType):
+class Mutations(BaseMutation, BusinessLogicMutations, NotificationMutations, SmileDesignMutations, graphene.ObjectType):
     pass
 
 

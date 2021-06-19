@@ -6,13 +6,13 @@ curl https://risos.liara.run/graphql/ \
 
 
 curl http://localhost:8000/graphql/ \
-  -F operations='{ "query": "mutation ($profilePic: Upload!) { updateProfile(profilePic: $profilePic id:\"141\"){status} }", "variables": { "profilePic": null } }' \
+  -F operations='{ "query": "mutation ($profilePic: Upload!) { updateProfile(profileInput:{profilePic: $profilePic} id:\"30\"){status} }", "variables": { "profilePic": null } }' \
   -F map='{ "0": ["variables.profilePic"] }' \
-  -F 0=@test.png
+  -F 0=@2.jpg
 
 
 
 curl http://localhost:8000/graphql/ \
   -F operations='{ "query": "mutation ($pic: Upload!) { labpicMutation(pic: $pic labId:\"1\" picNumber:1){status}}", "variables": { "pic": null } }' \
   -F map='{ "0": ["variables.pic"] }' \
-  -F 0=@test.png
+  -F 0=@2.jpg

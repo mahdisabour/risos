@@ -273,6 +273,7 @@ class FilterPatient(graphene.ObjectType):
              Q(related_profile__last_name__icontains=name)) &
             Q(doctor__id=doctor_id)
         )
+        print(filtered_patients)
         return filtered_patients.all()
 
 

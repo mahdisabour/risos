@@ -81,7 +81,7 @@ class ChangePassword(graphene.Mutation):
     status = graphene.String()
 
     class Arguments:
-        username = graphene.Int(required=True)
+        username = graphene.String(required=True)
         new_password = graphene.String(required=True)
 
     def mutate(self, info, username, new_password):
