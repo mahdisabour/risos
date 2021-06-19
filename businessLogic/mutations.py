@@ -20,8 +20,6 @@ from django import forms
 
 from django.core.files import File
 
-from extendProfile.mutations import ProfileInput
-
 
 class patientPics(graphene.InputObjectType):
     smile_image = Upload(required=False)
