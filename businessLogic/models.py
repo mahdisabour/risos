@@ -180,15 +180,27 @@ class LabPic(models.Model):
 @receiver(post_save, sender=Patient)
 def create_patient_pic(sender, instance, created, **kwargs):
     if not created:
-        pics = instance._patient_pics
-        PatientPic(
-            smile_image=pics['smile_image'], 
-            full_smile_image=pics['full_smile_image'],
-            side_image=pics['side_image'],
-            optional_image=pics['optional_image'],
-            patient=instance
-        ).save()
+        try:
+            pics = instance._patient_pics
+            PatientPic(
+                smile_image=pics['smile_image'], 
+                full_smile_image=pics['full_smile_image'],
+                side_image=pics['side_image'],
+                optional_image=pics['optional_image'],
+                patient=instance
+            ).save()
+        except:
+            pass
 
+
+
+# @receiver(post_save, sender=Service)
+# def create_smile_design(sender, instance, created, **kwargs):
+#     if created:
+#         smile_design = SmileDesignService()
+#         smile_design.save()
+#         instance.related_smile_design = smile_design
+#         instance.save()
 
 
 # @receiver(post_save, sender=Order)

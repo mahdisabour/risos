@@ -25,7 +25,7 @@ SECRET_KEY = '6#sqbqv6)!e@@awe0+pr+=1$edbl74d28vh83)^72-j!0h^(w*'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["risos", "localhost"]
 
 # Application definition
 

@@ -1,6 +1,8 @@
 import graphene
 from .models import SmilePlot, OutRectangle, TeethCoordinate, SmileDesignService
-
+import requests 
+from businessLogic.models import *
+from .tasks import aiConnection
 
 class RectAngleInput(graphene.InputObjectType):
     x1 = graphene.Int(required=False)
@@ -47,5 +49,26 @@ class CoordinatesMutations(graphene.Mutation):
 
 
 
+class CreateSmileDesign(graphene.Mutation):
+    status = graphene.String()
+    smile_design_id = graphene.ID()
+
+    class Arguments:
+        # service_id = graphene.ID(required=True)
+        patient_id = graphene.ID(required=True)
+    
+    def mutate(self, info, patient_id):
+        patient = Patient.objects.get(id=patient_id)
+        patient_pic = patient.patient_pic
+        smile_image = patient_pic.smile_image
+        image_url = smile_image.url
+        ai_response = aiConnection(image_url=image_url)
+        print(ai_response)
+        smile_design = SmileDesignService()
+        smile_design.save()
+        return CreateSmileDesign(status="Sucsess", smile_design_id=smile_design.id)
+
+
 class SmileDesignMutations(graphene.ObjectType):
     coordinates_mutation = CoordinatesMutations.Field()
+    create_smile_design = CreateSmileDesign.Field()

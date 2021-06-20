@@ -1,4 +1,5 @@
 from django.db.models import fields
+from graphene.types import interface
 from graphene.types.inputobjecttype import InputObjectType
 from .models import BadColorReason, Doctor, Invoice, Lab, LabPic, Order, Patient, Service, Tooth, ToothSevice
 from extendProfile.models import *
@@ -17,6 +18,8 @@ from graphql_jwt.shortcuts import get_token
 from graphene_file_upload.scalars import Upload
 from graphene_django.forms.mutation import DjangoModelFormMutation
 from django import forms
+import django_filters
+import requests
 
 from django.core.files import File
 
@@ -231,32 +234,8 @@ class ToothMutation(graphene.Mutation):
 
 
 
-
-# class PatientNode(DjangoObjectType):
-#     class Meta:
-#         # Assume you have an Animal model defined with the following fields
-#         model = Patient
-#         filter_fields = ['related_profile__first_name',]
-#         interfaces = (relay.Node, )
-
-
-# class AnimalFilter(django_filters.FilterSet):
-#     # Do case-insensitive lookups on 'name'
-#     name = django_filters.CharFilter(lookup_expr=['iexact'])
-
-#     class Meta:
-#         model = Animal
-#         fields = ['name', 'genus', 'is_domesticated']
-
-
-# class Query(ObjectType):
-#     animal = relay.Node.Field(AnimalNode)
-#     # We specify our custom AnimalFilter using the filterset_class param
-#     all_animals = DjangoFilterConnectionField(AnimalNode,
-#                                               filterset_class=AnimalFilter)
-
-
 # search part
+# bugggggggggg
 class PatientType(DjangoObjectType):
     class Meta:
         model = Patient
@@ -271,7 +250,6 @@ class FilterPatient(graphene.ObjectType):
              Q(related_profile__last_name__icontains=name)) &
             Q(doctor__id=doctor_id)
         )
-        print(filtered_patients)
         return filtered_patients.all()
 
 
@@ -292,6 +270,7 @@ class FilterOrderByPatient(graphene.ObjectType):
             Q(related_service__related_doctor__id=doctor_id)
         )
         return filtered_orders.all()
+
 
 
 class BusinessLogicMutations(graphene.ObjectType):

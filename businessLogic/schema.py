@@ -8,6 +8,7 @@ from graphene_django import DjangoObjectType
 from graphene_django.debug import DjangoDebug
 from graphene_django.filter import DjangoFilterConnectionField
 import graphene
+from .models import *
 
 # Set this to your Django application name
 APPLICATION_NAME = 'businessLogic'
@@ -54,6 +55,8 @@ def create_model_object_meta(model):
                      filter_order_by=True,
                      )
                 )
+
+
 
 
 def create_model_in_filters(model):
@@ -104,5 +107,6 @@ def build_query_objs():
 
 
 BusinessLogicQuery = type('Query', (ObjectType,), build_query_objs())
+
 
 
