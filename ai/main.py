@@ -23,5 +23,7 @@ def root(image:Image):
         raise HTTPException(status_code=400, detail=resp["error"])
     
     coords = teeth.detect_top_six_teeth_for_edit(teeth.image)
-
+    if coords is None:
+        raise HTTPException(status_code=400, detail="image doesnt contain teeth to detect")
+    
     return {"status_code":"200" , "coords":coords} 

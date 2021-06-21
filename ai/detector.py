@@ -60,7 +60,8 @@ class ObjectDetector(object):
         image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
         preds = self.predict(image)
 
-        print(len(preds))
+        if len(preds) == 0:
+            return None
     
         if test_flag:
             for (x,y,xb,yb) in preds:

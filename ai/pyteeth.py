@@ -36,13 +36,16 @@ class Teeth():
         image = self.resize_image(image)
 
         detector = ObjectDetector(loadPath="teeth_detector.svm")
-        x,y,xb,yb = detector.detect(image)
+        coords = detector.detect(image)
+        if coords is None:
+            return coords
         
-        cv2.rectangle(image,(x,y),(xb,yb),(0,0,255),2)
-        cv2.putText(image,"top6_teeth",(x+5,y-5),cv2.FONT_HERSHEY_SIMPLEX,1.0,(128,255,0),2)
-        self.top_6_teeth_image = image
+        #x,y,xb,yb = coords
+        #cv2.rectangle(image,(x,y),(xb,yb),(0,0,255),2)
+        #cv2.putText(image,"top6_teeth",(x+5,y-5),cv2.FONT_HERSHEY_SIMPLEX,1.0,(128,255,0),2)
+        #self.top_6_teeth_image = image
         
-        return (x,y,xb,yb)
+        return coords
         
 
     def detect_each_tooth_for_edit(self , image , coords):
