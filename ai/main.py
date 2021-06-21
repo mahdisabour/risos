@@ -1,4 +1,4 @@
-from fastapi import FastAPI 
+from fastapi import FastAPI , HTTPException
 from pydantic import BaseModel
 
 from pyteeth import Teeth
@@ -11,10 +11,17 @@ app = FastAPI()
 
 
 
+
+
 @app.post("/")
 def root(image:Image):
-    print(image.url)
-    teeth = Teeth(image.url)
-    teeth.detect_top_six_teeth_for_edit(teeth.resized_image)
-    #return image
-    return {"message":"200"} #teeth.coords}
+    print(f"request is now here in root function")
+    teeth = Teeth()
+
+    resp = teeth.get_image_from_url(image.url)
+    if "error" in resp:
+        raise HTTPException(status_code=400, detail=resp["error"])
+    
+    coords = teeth.detect_top_six_teeth_for_edit(teeth.image)
+
+    return {"status_code":"200" , "coords":coords} 
