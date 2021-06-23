@@ -68,8 +68,7 @@ class OTP(models.Model):
 
 @receiver(post_save, sender=OTP)
 def otp_time_arrive(sender, instance, *args, **kwargs):
-    pass
-    # disableOTP.apply_async((instance.id, ), countdown=120)
+    disableOTP.apply_async((instance.id, ), countdown=120)
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_user_profile(sender, instance, created, **kwargs):

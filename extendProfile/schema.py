@@ -1,3 +1,4 @@
+from extendProfile.models import Profile
 from django.apps import apps
 # from django.contrib.postgres.fields import ArrayField, JSONField
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -7,6 +8,37 @@ from graphene import relay, ObjectType, Schema, Field, Int
 from graphene_django import DjangoObjectType
 from graphene_django.debug import DjangoDebug
 from graphene_django.filter import DjangoFilterConnectionField
+from django.contrib.auth.models import User
+
+
+# class UserNode(DjangoObjectType):
+#     class Meta:
+#         model = User
+#         filter_fields = "__all__"
+#         interfaces = (relay.Node,)
+
+
+# class ProfileNode(DjangoObjectType):
+#     class Meta:
+#         model = Profile
+#         filter_fields = ['id', 'first_name']
+#         exclude = ["OTP"]
+#         interfaces = (relay.Node,)
+
+
+
+
+# class extendProfileQuery(ObjectType):
+#     service = relay.Node.Field(UserNode)
+#     all_service = DjangoFilterConnectionField(UserNode)
+
+
+#     profile = relay.Node.Field(ProfileNode)
+#     all_profile = DjangoFilterConnectionField(ProfileNode)
+
+
+
+
 
 # Set this to your Django application name
 APPLICATION_NAME = 'extendProfile'

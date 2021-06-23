@@ -8,5 +8,4 @@ def aiConnection(image_url, ai_url="http://ai:4557"):
         "url": f"http://risos:8000{image_url}",
     }
     response = requests.post(ai_url,json=data)
-    print(response.text)
-    return response.text
+    return response

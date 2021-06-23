@@ -3,6 +3,7 @@ from .models import SmilePlot, OutRectangle, TeethCoordinate, SmileDesignService
 import requests 
 from businessLogic.models import *
 from .tasks import aiConnection
+import json
 
 class RectAngleInput(graphene.InputObjectType):
     x1 = graphene.Int(required=False)
@@ -51,6 +52,7 @@ class CoordinatesMutations(graphene.Mutation):
 
 class CreateSmileDesign(graphene.Mutation):
     status = graphene.String()
+    detail = graphene.String()
     smile_design_id = graphene.ID()
 
     class Arguments:
@@ -63,10 +65,20 @@ class CreateSmileDesign(graphene.Mutation):
         smile_image = patient_pic.smile_image
         image_url = smile_image.url
         ai_response = aiConnection(image_url=image_url)
-        print(ai_response)
-        smile_design = SmileDesignService()
-        smile_design.save()
-        return CreateSmileDesign(status="Sucsess", smile_design_id=smile_design.id)
+        data = json.loads(ai_response.text)
+        if data["status_code"] == "200":
+            smile_design = SmileDesignService()
+            smile_design.save()
+            rect_angle = smile_design.smile_plot.first().out_rectangle.first().rect_angle
+            coords = data["coords"]
+            for key, val in coords.items():
+                if val:
+                    setattr(rect_angle, key, val)
+            rect_angle.save()
+            return CreateSmileDesign(status="Sucsess", detail="done", smile_design_id=smile_design.id)
+        else:
+            return CreateSmileDesign(status="Failed", detail=data["detail"])
+
 
 
 class SmileDesignMutations(graphene.ObjectType):

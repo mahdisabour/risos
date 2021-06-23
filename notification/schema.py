@@ -4,21 +4,33 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 import django_filters
 from django.db.models import ImageField
 from graphene import relay, ObjectType, Schema, Field, Int
+from graphene.types import interface, objecttype
 from graphene_django import DjangoObjectType
 from graphene_django.debug import DjangoDebug
 from graphene_django.filter import DjangoFilterConnectionField
-
-
-# https://github.com/timothyjlaurent/auto-graphene-django/blob/master/auto-graphene-django/graphql.py
-
+from .models import *
 
 # Set this to your Django application name
-APPLICATION_NAME = 'smileDesign'
+
+
+# class ReceiverNode(DjangoObjectType):
+#     class Meta:
+#         model = Receiver
+#         filter_fields = "__all__"
+#         interfaces = (relay.Node,)
+
+
+# class notificationQuery(ObjectType):
+#     service = relay.Node.Field(ReceiverNode)
+#     all_service = DjangoFilterConnectionField(ReceiverNode)
+
+
+APPLICATION_NAME = 'notification'
 
 
 class PlainTextNode(relay.Node):
     class Meta:
-        name = 'smileDesignNode'
+        name = 'notificationNode'
 
     @staticmethod
     def to_global_id(type, id):
@@ -106,4 +118,4 @@ def build_query_objs():
     return queries
 
 
-smileDesignQuery = type('Query', (ObjectType,), build_query_objs())
+notificationQuery = type('Query', (ObjectType,), build_query_objs())

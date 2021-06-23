@@ -10,6 +10,43 @@ from graphene_django.filter import DjangoFilterConnectionField
 import graphene
 from .models import *
 
+
+# class PlainTextNode(relay.Node):
+#     class Meta:
+#         name = 'businessLogicService'
+
+#     @staticmethod
+#     def to_global_id(type, id):
+#         return id
+
+#     @staticmethod
+#     def from_global_id(global_id):
+#         return global_id.split(':')
+
+
+
+# class DoctorNode(DjangoObjectType):
+#     class Meta:
+#         model = Doctor
+#         filter_fields = ['id']
+#         interfaces = (PlainTextNode, )
+
+
+#     @classmethod
+#     def get_node(cls, info, id):
+#         return Doctor.objects.get(id=id)
+
+
+
+# class BusinessLogicQuery(ObjectType):
+#     doctor = relay.Node.Field(DoctorNode)
+#     all_doctor = DjangoFilterConnectionField(DoctorNode)
+
+
+
+
+
+
 # Set this to your Django application name
 APPLICATION_NAME = 'businessLogic'
 

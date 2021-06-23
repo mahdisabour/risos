@@ -12,20 +12,20 @@ class CreateDevice(graphene.Mutation):
     status = graphene.String()
 
     class Arguments:
-        user_id = graphene.ID(required=True)
+        Profile_id = graphene.ID(required=True)
         device_id = graphene.String(required=True)
 
 
-    def mutate(self, info, user_id, device_id):
+    def mutate(self, info, Profile_id, device_id):
         # user = info.context.user
         # token = info.context.META.get("HTTP_TOKEN")
         # print(get_payload(token, info.context))
         # print(token)
 
-        user = User.objects.get(id = user_id)
-        Receiver(
+        profile = Profile.objects.get(id = Profile_id)
+        NotifReceiver(
             device_id=device_id,
-            user = user
+            profile = profile
         ).save()
         return CreateDevice(status="Success")
 
