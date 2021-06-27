@@ -24,7 +24,7 @@ WORKDIR $APP_HOME
 RUN apk update && apk add libpq
 RUN pip install --upgrade pip
 RUN apk update \
-    && apk add --virtual .build-deps gcc rust cargo libffi-dev openssl-dev libressl-dev python3-dev musl-dev \
+    && apk add --virtual .build-deps libxslt-dev libxml2-dev gcc rust cargo libffi-dev openssl-dev libressl-dev python3-dev musl-dev \
     && apk add postgresql \
     && apk add postgresql-dev \
     && pip install psycopg2 \
