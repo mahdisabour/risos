@@ -14,3 +14,5 @@ redis==3.5.3
 ippanel==1.1.0
 graphene-file-upload==1.3.0
 Pillow==8.1.0
+zeep==4.0.0
+aiohttp==3.7.4.post0

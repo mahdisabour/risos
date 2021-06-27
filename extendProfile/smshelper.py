@@ -1,23 +1,24 @@
-from ippanel import Client
+from .melipayamak import Api
 
-api_key = "TkHglMm5LV49fr_SaxnT2vzr2eW7KFHT3VNXBxrIwAY="
-sms = Client(api_key)
-pattern_code = "3op4py8h7b"
-phone_number = "+985000125475"
+username = 'gaatgallery'
+password = '2488'
+api = Api(username, password)
 
 
-def otp_send(recipient, otp):
-    pattern_values = {
-        "otp": otp,
-    }
-    bulk_id = sms.send(
-        phone_number,  # originator
-        [recipient],  # recipients
-        "کد تایید شما در وبسایت ریسوس: "+otp,
-    )
-    # bulk_id = sms.send_pattern(
-    #     pattern_code,  # pattern code
-    #     phone_number,  # originator
-    #     recipient,  # recipient
-    #     pattern_values,  # pattern Fvalues
-    # )
+def send_sms(phone_number, msg):
+    # customer = Customer.objects.get(id=customer_id)
+    # if customer:
+    #     text = text.replace("!!first_name!!",customer.billing_first_name)
+    #     text = text.replace("!!last_name!!", customer.billing_last_name)
+    #     text = text.replace("!!address_1!!", customer.billing_address_1)
+    #     text = text.replace("!!city!!", customer.billing_city)
+    #     text = text.replace("!!state!!", customer.billing_state)
+    #     text = text.replace("!!phone!!", customer.billing_phone)
+    #     text = text.replace("!!postcode!!", customer.billing_postcode)
+    sms = api.sms()
+    to = phone_number
+    _from = '30008666971367'
+    # text = 'تست وب سرویس ملی پیامک'
+    msg = "کد تایید اپلیکیشن ریسوس" + " : " + msg
+    response = sms.send(to, _from, msg)
+    print(response)

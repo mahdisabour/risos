@@ -9,10 +9,10 @@ from smileDesign.mutations import SmileDesignMutations
 from extendProfile.schema import extendProfileQuery
 from smileDesign.schema import smileDesignQuery
 from notification.schema import notificationQuery
-from businessLogic.mutations import FilterPatient, FilterOrderByPatient
+from businessLogic.mutations import FilterPatient, FilterOrderByPatient, FilterLabByName
 
 
-class Query(BusinessLogicQuery, smileDesignQuery, extendProfileQuery, notificationQuery, FilterPatient, FilterOrderByPatient, graphene.ObjectType):
+class Query(BusinessLogicQuery, smileDesignQuery, extendProfileQuery, notificationQuery, FilterPatient, FilterOrderByPatient, FilterLabByName, graphene.ObjectType):
     # This class will inherit from multiple Queries
     # as we begin to add more apps to our project
     pass

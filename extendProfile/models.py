@@ -7,7 +7,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.validators import MaxLengthValidator
 
-from extendProfile.smshelper import otp_send
+from extendProfile.smshelper import send_sms
 
 from .tasks import disableOTP
 
@@ -66,9 +66,9 @@ class OTP(models.Model):
     def __str__(self):
         return f"{self.profile.user.username}"
 
-@receiver(post_save, sender=OTP)
-def otp_time_arrive(sender, instance, *args, **kwargs):
-    disableOTP.apply_async((instance.id, ), countdown=120)
+# @receiver(post_save, sender=OTP)
+# def otp_time_arrive(sender, instance, *args, **kwargs):
+#     disableOTP.apply_async((instance.id, ), countdown=120)
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -110,7 +110,7 @@ def create_profile_otp(sender, instance, created, **kwargs):
 def send_otp(sender, instance, created, **kwargs):
     if created:
         phone_number = instance.profile.user.username
-        otp_send(phone_number, instance.message)
+        send_sms(phone_number, instance.message)
 
 
 

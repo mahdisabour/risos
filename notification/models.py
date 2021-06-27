@@ -16,7 +16,7 @@ class NotifService(models.Model):
         ("order", "ORDER"),
         ("invoice", "INVOICE"),
     }
-    object_type = models.CharField(max_length=50)
+    object_type = models.CharField(max_length=50, choices=TYPES)
     object_id = models.PositiveIntegerField()
 
 

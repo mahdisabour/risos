@@ -41,15 +41,15 @@ services:
             - "4557:4557"
 
 
-    nginx:
-      build: nginx
-      volumes:
-        - static_volume:/home/app/web/staticfiles
-        - .:/home/app/web
-      ports:
-        - 80:80
-      depends_on:
-        - risos
+    # nginx:
+    #   build: nginx
+    #   volumes:
+    #     - static_volume:/home/app/web/staticfiles
+    #     - .:/home/app/web
+    #   ports:
+    #     - 80:80
+    #   depends_on:
+    #     - risos
 
         
 volumes: 

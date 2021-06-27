@@ -265,11 +265,30 @@ class FilterOrderByPatient(graphene.ObjectType):
 
     def resolve_filtered_orders(self, info, name, doctor_id):
         filtered_orders = Order.objects.filter(
-            (Q(related_service__related_patient__related_profile__first_name=name) |
-             Q(related_service__related_patient__related_profile__last_name=name)) &
+            (Q(related_service__related_patient__related_profile__first_name__icontains=name) |
+             Q(related_service__related_patient__related_profile__last_name__icontains=name)) &
             Q(related_service__related_doctor__id=doctor_id)
         )
         return filtered_orders.all()
+
+
+class LabType(DjangoObjectType):
+    class Meta:
+        model = Lab
+        
+class FilterLabByName(graphene.ObjectType):
+    filtered_lab = graphene.List(LabType, name=graphene.String(
+        required=True))
+
+
+    def resolve_filtered_lab(self, info, name):
+        filtered_lab = Lab.objects.filter(
+            (Q(related_profile__first_name__icontains=name) |
+             Q(related_profile__last_name__icontains=name)) 
+        )
+        return filtered_lab.all()
+
+
 
 
 
