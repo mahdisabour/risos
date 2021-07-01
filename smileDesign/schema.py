@@ -66,6 +66,15 @@ def create_model_in_filters(model):
         for f in model._meta.get_fields()
         if not isinstance(f, exempted_field_types) and f.name not in exempted_field_names}
 
+    custome_filter = {}
+    if model_name == "Teeth":
+        custome_filter = {'filter_by_color': django_filters.CharFilter(
+            field_name='related_smile_color__name', lookup_expr='iexact'),
+            'filter_by_category' : django_filters.CharFilter(
+            field_name='related_smile_category__name', lookup_expr='iexact')
+        }
+
+    in_filters.update(custome_filter)
     fields = [f.name
               for f in model._meta.get_fields()
               if not isinstance(f, exempted_field_types) and f.name not in exempted_field_names]
@@ -96,7 +105,7 @@ def build_query_objs():
                         _id=Int(name='_id'),
                         resolve__id=id_resolver,
                     )
-                    )
+                )
         queries.update({model_name: PlainTextNode.Field(node)})
         queries.update({
             'all_{model_name}'.format(model_name=model_name):

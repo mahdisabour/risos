@@ -1,57 +1,58 @@
 version: '3.7'
 
-services: 
+services:
     risos:
         image: risos
-        command: > 
+        container_name: risos
+        command: >
             sh -c "python manage.py makemigrations && python -u manage.py migrate && python manage.py runserver 0.0.0.0:8000"
         ports:
             - "8000:8000"
-        environment: 
+        environment:
             - REDIS_HOST=redis
-        depends_on: 
+        depends_on:
             - redis
-        volumes: 
+        volumes:
             - static_volume:/home/app/web/staticfiles
-            - .:/home/app/web
+            - .:/home/app/web/
     redis:
         image: redis:latest
         ports:
             - "6379:6379"
-    
+
     celery:
         restart: always
         image: risos
         command: celery -A risos worker --loglevel=debug --concurrency=8
-        volumes: 
+        volumes:
             - .:/home/app/web
-        depends_on: 
+        depends_on:
             - redis
             - risos
 
     ai:
         image: ai
+        container_name: ai
         command: uvicorn main:app --host 0.0.0.0 --port 4557 --reload --debug --workers 3
-        volumes: 
+        volumes:
             - ./ai:/app
-        depends_on: 
+        depends_on:
             - risos
             - celery
         ports:
             - "4557:4557"
 
+    nginx:
+        image: risos_nginx
+        container_name: nginx
+        volumes:
+            - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+            - static_volume:/home/app/web/staticfiles
+        ports:
+            - 80:80
+        depends_on:
+            - risos
 
-    # nginx:
-    #   build: nginx
-    #   volumes:
-    #     - static_volume:/home/app/web/staticfiles
-    #     - .:/home/app/web
-    #   ports:
-    #     - 80:80
-    #   depends_on:
-    #     - risos
 
-        
-volumes: 
+volumes:
     static_volume:
-    

@@ -184,7 +184,8 @@ class UpdateProfile(graphene.Mutation):
         print(type(kwargs["profile_pic"]))
         profile = Profile.objects.get(id=kwargs["id"])
         for k, v in kwargs.items():
-            setattr(profile, k, v)
+            if v:
+                setattr(profile, k, v)
         profile.save()
         return UpdateProfile(status="success")
 

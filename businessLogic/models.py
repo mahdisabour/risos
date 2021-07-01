@@ -219,12 +219,8 @@ def notif_base_on_order(sender, instance, created, **kwargs):
         message=message, 
         service=notif_service,
     )
-    print(receivers)
     notif.receivers.set(receivers)
     notif.save()
-    # notif.receivers.add(*receivers)
-    # notif.save()
-    # print(notif.receivers.all())
         
     
 
@@ -238,21 +234,3 @@ def notif_base_on_order(sender, instance, created, **kwargs):
 #         smile_design.save()
 #         instance.related_smile_design = smile_design
 #         instance.save()
-
-
-# @receiver(post_save, sender=Order)
-# def create_invoice(sender, instance, created, **kwargs):
-#     if created:
-#         order = instance
-#         invoice = Invoice(
-#             related_service=order.related_service,
-#             expected_date=order.expected_date,
-#             actual_date=order.actual_date,
-#             description=order.description,
-#             related_order=order,
-#             related_lab=order.finalized_lab,
-#         )
-#         invoice.save()
-#         instance._invoice = invoice.id
-#         instance.save()
-

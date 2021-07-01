@@ -46,6 +46,14 @@ class SmileType(models.Model):
         return str(self.id)
 
 
+
+class Teeth(models.Model):
+    teeth_image = models.ImageField(upload_to='Teeth/', blank=True, null=True)
+    related_smile_color = models.ForeignKey(SmileColor, on_delete=models.CASCADE)
+    related_smile_category = models.ForeignKey(SmileCategory, on_delete=models.CASCADE)
+    
+
+
 class SmileDesignService(models.Model):
     smile_image = models.ImageField(blank=True, null=True)
     full_smile_image = models.ImageField(blank=True, null=True)
