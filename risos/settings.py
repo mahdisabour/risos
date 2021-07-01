@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'graphql_jwt',
     'graphql_jwt.refresh_token.apps.RefreshTokenConfig',
     'corsheaders',
+    'import_export',
 ]
 
 MIDDLEWARE = [

@@ -6,6 +6,14 @@ from treebeard.forms import movenodeform_factory
 # Register your models here.
 from businessLogic.models import ServiceCategory
 from smileDesign.models import SmileCategory, SmileColor
+from import_export.admin import ImportExportModelAdmin
+from import_export import resources
+
+
+def create_model_object_meta(model):
+    return type('Meta', (object, ) ,dict(model=model,))
+
+
 
 
 class MyServiceCategory(TreeAdmin):
@@ -33,6 +41,9 @@ for model in models:
     if model == ServiceCategory or model == SmileCategory or model == SmileColor or model == RefreshToken:
         continue
     try:
-        admin.site.register(model)
+        meta_class = create_model_object_meta(model)
+        modelResource = type(f'{model.__name__}Resource', (resources.ModelResource,), dict(Meta=meta_class,))
+        adminModel = type(f'{model.__name__}Admin', (ImportExportModelAdmin,), dict(resource_class=model,))
+        admin.site.register(model, adminModel)
     except admin.sites.AlreadyRegistered:
         pass
