@@ -195,32 +195,32 @@ def create_patient_pic(sender, instance, created, **kwargs):
 
 
 
-@receiver(post_save, sender=Order)
-def notif_base_on_order(sender, instance, created, **kwargs):
-    if created:
-        message = "order completed"
-    else:
-        message = "order updated"
-    # patinet_profile = instance.related_service.related_patient
-    lab_profile = None
-    try:
-        doctor_profile = instance.related_service.related_doctor.related_profile
-        lab_profile = instance.finalized_lab.related_profile
-    except:
-        pass
-    profiles = [doctor_profile, lab_profile]
-    receivers = [NotifReceiver.objects.filter(profile=profile).first() for profile in profiles if profile]
-    if NotifService.objects.filter(object_id=instance.id).exists():
-        notif_service = NotifService.objects.get(object_id=instance.id, object_type="order")
-    else:
-        notif_service = NotifService(object_id=instance.id, object_type="order")
-        notif_service.save()
-    notif = Notification(
-        message=message, 
-        service=notif_service,
-    )
-    notif.receivers.set(receivers)
-    notif.save()
+# @receiver(post_save, sender=Order)
+# def notif_base_on_order(sender, instance, created, **kwargs):
+#     if created:
+#         message = "order completed"
+#     else:
+#         message = "order updated"
+#     # patinet_profile = instance.related_service.related_patient
+#     lab_profile = None
+#     try:
+#         doctor_profile = instance.related_service.related_doctor.related_profile
+#         lab_profile = instance.finalized_lab.related_profile
+#     except:
+#         pass
+#     profiles = [doctor_profile, lab_profile]
+#     receivers = [NotifReceiver.objects.filter(profile=profile).first() for profile in profiles if profile]
+#     if NotifService.objects.filter(object_id=instance.id).exists():
+#         notif_service = NotifService.objects.get(object_id=instance.id, object_type="order")
+#     else:
+#         notif_service = NotifService(object_id=instance.id, object_type="order")
+#         notif_service.save()
+#     notif = Notification(
+#         message=message, 
+#         service=notif_service,
+#     )
+#     notif.receivers.set(receivers)
+#     notif.save()
         
     
 

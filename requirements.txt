@@ -17,3 +17,4 @@ Pillow==8.1.0
 zeep==4.0.0
 aiohttp==3.7.4.post0
 django-import-export==2.5.0
+gunicorn==20.1.0

@@ -53,16 +53,18 @@ services:
         ports:
             - "4557:4557"
 
-    # nginx:
-    #     image: risos_nginx
-    #     container_name: nginx
-    #     volumes:
-    #         - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
-    #         - static_volume:/home/app/web/staticfiles
-    #     ports:
-    #         - 80:80
-    #     depends_on:
-    #         - risos
+    nginx:
+        image: risos_nginx
+        container_name: nginx
+        restart: always
+        volumes:
+            - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+            - static_volume:/home/app/web/staticfiles
+        ports:
+            - 80:80
+            - 443:443
+        depends_on:
+            - risos
 
 
 volumes:
