@@ -48,11 +48,23 @@ class SmileType(models.Model):
 
 
 class Teeth(models.Model):
+    name = models.CharField(max_length=50, blank=True, null=True)
     teeth_image = models.ImageField(upload_to='Teeth/', blank=True, null=True)
     related_smile_color = models.ForeignKey(SmileColor, on_delete=models.CASCADE)
     related_smile_category = models.ForeignKey(SmileCategory, on_delete=models.CASCADE)
-    
 
+    def __str__(self):
+        return self.name
+
+
+class Tooth(models.Model):
+    name = models.CharField(max_length=50, blank=True, null=True)
+    tooth_image = models.ImageField(upload_to='Teeth/', blank=True, null=True)
+    related_teeth = models.ForeignKey(Teeth, on_delete=models.CASCADE, related_name="Tooths")
+
+    def __str__(self):
+        return self.name
+    
 
 class SmileDesignService(models.Model):
     smile_image = models.ImageField(blank=True, null=True)

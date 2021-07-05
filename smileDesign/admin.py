@@ -8,6 +8,19 @@ from businessLogic.models import ServiceCategory
 from smileDesign.models import SmileCategory, SmileColor
 from import_export.admin import ImportExportModelAdmin
 from import_export import resources
+from .models import Teeth
+
+
+
+class TeethAdmin(admin.ModelAdmin):
+    list_display = ['name', 'get_tooths', 'related_smile_color', 'related_smile_category']
+
+    def get_tooths(self, obj):
+        return obj.Tooths.all()
+
+
+admin.site.register(Teeth, TeethAdmin)
+
 
 
 def create_model_object_meta(model):
