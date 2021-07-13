@@ -21,14 +21,14 @@ services:
             - "6379:6379"
 
 
-    db:
-        image: postgres:12.0-alpine
-        volumes:
-            - postgres_data:/var/lib/postgresql/data/
-        env_file:
-            - ./.env.prod.db
-        ports:
-            - "5432:5432"
+    # db:
+    #     image: postgres:12.0-alpine
+    #     volumes:
+    #         - postgres_data:/var/lib/postgresql/data/
+    #     env_file:
+    #         - ./.env.prod.db
+    #     ports:
+    #         - "5432:5432"
         
 
     celery:
@@ -60,6 +60,7 @@ services:
         volumes:
             - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
             - static_volume:/home/app/web/staticfiles
+            - media_files:/home/app/web/mediafiles
         ports:
             - 80:80
             - 443:443
@@ -70,3 +71,4 @@ services:
 volumes:
     static_volume:
     postgres_data:
+    media_files:
