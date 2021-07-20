@@ -1,7 +1,7 @@
 from .melipayamak import Api
 
-username = 'gaatgallery'
-password = '2488'
+username = '09129472900'
+password = '6322'
 api = Api(username, password)
 
 
@@ -17,7 +17,7 @@ def send_sms(phone_number, msg):
     #     text = text.replace("!!postcode!!", customer.billing_postcode)
     sms = api.sms()
     to = phone_number
-    _from = '30008666971367'
+    _from = '50004001472900'
     # text = 'تست وب سرویس ملی پیامک'
     msg = "کد تایید اپلیکیشن ریسوس" + " : " + msg
     response = sms.send(to, _from, msg)

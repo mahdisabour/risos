@@ -1,7 +1,7 @@
 from django_filters.filters import Filter
 import graphene
 
-from businessLogic.schema import BusinessLogicQuery
+from businessLogic.schema import BusinessLogicQuery, BusinessLogicQueryCustom
 from extendProfile.mutations import BaseMutation
 from businessLogic.mutations import BusinessLogicMutations
 from notification.mutations import NotificationMutations
@@ -12,7 +12,7 @@ from notification.schema import notificationQuery
 from businessLogic.mutations import FilterPatient, FilterOrderByPatient, FilterLabByName
 
 
-class Query(BusinessLogicQuery, smileDesignQuery, extendProfileQuery, notificationQuery, FilterPatient, FilterOrderByPatient, FilterLabByName, graphene.ObjectType):
+class Query(BusinessLogicQuery, BusinessLogicQueryCustom, smileDesignQuery, extendProfileQuery, notificationQuery, FilterPatient, FilterOrderByPatient, FilterLabByName, graphene.ObjectType):
     # This class will inherit from multiple Queries
     # as we begin to add more apps to our project
     pass

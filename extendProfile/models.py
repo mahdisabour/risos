@@ -58,6 +58,11 @@ class Profile(models.Model):
     #     return self.phone_number
 
 
+class Tutorial(models.Model):
+    file = models.FileField(upload_to='', max_length=10000)
+
+
+
 class OTP(models.Model):
     message = models.CharField(max_length=7, default=random_with_N_digits, blank=True, null=True)
     is_valid = models.BooleanField(default=True)

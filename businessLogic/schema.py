@@ -5,7 +5,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 import django_filters
 from django.db.models import ImageField, CharField
 from graphene import relay, ObjectType, Schema, Field, Int
-from graphene.types import field
+from graphene.types import field, interface
 from graphene_django import DjangoObjectType
 from graphene_django.debug import DjangoDebug
 from graphene_django.filter import DjangoFilterConnectionField
@@ -13,81 +13,81 @@ import graphene
 from .models import *
 
 
-# class PlainTextNode(relay.Node):
-#     class Meta:
-#         name = 'businessLogicService'
+def id_resolver(self, *_):
+    return self.id
 
-#     @staticmethod
-#     def to_global_id(type, id):
-#         return id
+exempted_field_types = (GenericForeignKey, ImageField)
+exempted_field_names = ('_field_status',)
 
-#     @staticmethod
-#     def from_global_id(global_id):
-#         return global_id.split(':')
+def generate_filter_fields(model):
+    # May want to add special string methods here eg istartswith
+    return {f.name: ['in'] for f in model._meta.get_fields()
+            if not isinstance(f, exempted_field_types) and f.name not in exempted_field_names}
 
-
-# class DoctorNode(DjangoObjectType):
-#     class Meta:
-#         model = Doctor
-#         filter_fields = ['id']
-#         interfaces = (PlainTextNode, )
-
-
-#     @classmethod
-#     def get_node(cls, info, id):
-#         return Doctor.objects.get(id=id)
-
-
-# class BusinessLogicQuery(ObjectType):
-#     doctor = relay.Node.Field(DoctorNode)
-#     all_doctor = DjangoFilterConnectionField(DoctorNode)
-
-
-# Set this to your Django application name
-APPLICATION_NAME = 'businessLogic'
 
 
 class PlainTextNode(relay.Node):
     class Meta:
-        name = 'Node'
+        name = 'businessLogicService'
 
     @staticmethod
     def to_global_id(type, id):
-        return '{}:{}'.format(type, id)
+        return id
 
     @staticmethod
     def from_global_id(global_id):
         return global_id.split(':')
 
 
-def id_resolver(self, *_):
-    return self.id
+class DoctorNode(DjangoObjectType):
+    class Meta:
+        model = Doctor
+        filter_fields = generate_filter_fields(Doctor)
+        interfaces = (PlainTextNode, )
+        filter_order_by=True
+    _id=Int(name='_id')
+    resolve__id=id_resolver
 
 
-# exempted_field_types = (ArrayField, GenericForeignKey, JSONField)
-exempted_field_types = (GenericForeignKey, ImageField)
-exempted_field_names = ('_field_status',)
+class PatientNode(DjangoObjectType):
+    class Meta:
+        model = Patient
+        filter_fields = generate_filter_fields(Patient)
+        interfaces = (PlainTextNode, )
+        filter_order_by = True
+    _id=Int(name='_id')
+    resolve__id=id_resolver
 
+
+class PatientFilter(django_filters.FilterSet):
+    filter_patient = django_filters.CharFilter(field_name="related_profile__first_name", lookup_expr='icontains')
+
+    class Meta:
+        model = Patient
+        fields = []
+
+
+class BusinessLogicQueryCustom(ObjectType):
+    doctor = PlainTextNode.Field(DoctorNode)
+    all_doctor = DjangoFilterConnectionField(DoctorNode)
+
+    patient = PlainTextNode.Field(PatientNode)
+    all_patient = DjangoFilterConnectionField(PatientNode, filterset_class=PatientFilter)
+
+
+
+
+
+# custome query
+custom_models = ["Doctor", "Patient"]
+
+
+# Set this to your Django application name
+# auto generate query 
+APPLICATION_NAME = 'businessLogic'
 
 class InFilter(django_filters.filters.BaseInFilter, django_filters.filters.CharFilter):
     pass
-
-
-custom_filter_class = ["Patient"]
-
-
-def generate_filter_fields(model):
-    print(model.__name__)
-    # May want to add special string methods here eg istartswith
-    # if model.__name__ not in custom_filter_class:
-    return {f.name: ['in'] for f in model._meta.get_fields()
-            if not isinstance(f, exempted_field_types) and f.name not in exempted_field_names}
-    # else:
-    #     filter = {f.name: ['in'] for f in model._meta.get_fields()
-    #             if not isinstance(f, exempted_field_types) and f.name not in exempted_field_names}
-    #     filter.update({"related_profile__first_name": ["icontains"]})
-    #     print(filter)
-    #     return filter
 
 
 def create_model_object_meta(model):
@@ -114,7 +114,7 @@ def create_model_in_filters(model):
         if not isinstance(f, exempted_field_types) and f.name not in exempted_field_names and isinstance(f, CharField)}
 
     custome_filter = {}
-    if model_name == "Patient" or "Lab":
+    if model_name == "Lab":
         custome_filter = {'search_by_name': django_filters.CharFilter(
             field_name='related_profile__first_name', lookup_expr='icontains')}
 
@@ -146,23 +146,23 @@ def build_query_objs():
 
     for model in models:
         model_name = model.__name__
-        meta_class = create_model_object_meta(model)
+        if model_name not in custom_models:
+            meta_class = create_model_object_meta(model)
 
-        node = type('{model_name}'.format(model_name=model_name),
-                    (DjangoObjectType,),
-                    dict(
-                        Meta=meta_class,
-                        _id=Int(name='_id'),
-                        resolve__id=id_resolver,
-        )
-        )
-        queries.update({model_name: PlainTextNode.Field(node)})
-        queries.update({
-            'all_{model_name}'.format(model_name=model_name):
-                DjangoFilterConnectionField(
-                    node, filterset_class=create_model_in_filters(model))
-        })
-    # queries['debug'] = Field(DjangoDebug, name='__debug')
+            node = type('{model_name}'.format(model_name=model_name),
+                        (DjangoObjectType,),
+                        dict(
+                            Meta=meta_class,
+                            _id=Int(name='_id'),
+                            resolve__id=id_resolver,
+            )
+            )
+            queries.update({model_name: PlainTextNode.Field(node)})
+            queries.update({
+                'all_{model_name}'.format(model_name=model_name):
+                    DjangoFilterConnectionField(
+                        node, filterset_class=create_model_in_filters(model))
+            })
     return queries
 
 

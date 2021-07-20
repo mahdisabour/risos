@@ -11,34 +11,7 @@ from graphene_django.filter import DjangoFilterConnectionField
 from django.contrib.auth.models import User
 
 
-# class UserNode(DjangoObjectType):
-#     class Meta:
-#         model = User
-#         filter_fields = "__all__"
-#         interfaces = (relay.Node,)
-
-
-# class ProfileNode(DjangoObjectType):
-#     class Meta:
-#         model = Profile
-#         filter_fields = ['id', 'first_name']
-#         exclude = ["OTP"]
-#         interfaces = (relay.Node,)
-
-
-
-
-# class extendProfileQuery(ObjectType):
-#     service = relay.Node.Field(UserNode)
-#     all_service = DjangoFilterConnectionField(UserNode)
-
-
-#     profile = relay.Node.Field(ProfileNode)
-#     all_profile = DjangoFilterConnectionField(ProfileNode)
-
-
-
-
+custom_model = ["Tutorial"]
 
 # Set this to your Django application name
 APPLICATION_NAME = 'extendProfile'
@@ -123,21 +96,22 @@ def build_query_objs():
 
     for model in models:
         model_name = model.__name__
-        meta_class = create_model_object_meta(model)
+        if model_name not in custom_model:
+            meta_class = create_model_object_meta(model)
 
-        node = type('{model_name}'.format(model_name=model_name),
-                    (DjangoObjectType,),
-                    dict(
-                        Meta=meta_class,
-                        _id=Int(name='_id'),
-                        resolve__id=id_resolver,
+            node = type('{model_name}'.format(model_name=model_name),
+                        (DjangoObjectType,),
+                        dict(
+                            Meta=meta_class,
+                            _id=Int(name='_id'),
+                            resolve__id=id_resolver,
+                        )
                     )
-                    )
-        queries.update({model_name: PlainTextNode.Field(node)})
-        queries.update({
-            'all_{model_name}'.format(model_name=model_name):
-                DjangoFilterConnectionField(node, filterset_class=create_model_in_filters(model))
-        })
+            queries.update({model_name: PlainTextNode.Field(node)})
+            queries.update({
+                'all_{model_name}'.format(model_name=model_name):
+                    DjangoFilterConnectionField(node, filterset_class=create_model_in_filters(model))
+            })
     # queries['debug'] = Field(DjangoDebug, name='__debug')
     return queries
 

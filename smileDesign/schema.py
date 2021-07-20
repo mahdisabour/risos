@@ -1,3 +1,4 @@
+# https://github.com/timothyjlaurent/auto-graphene-django/blob/master/auto-graphene-django/graphql.py
 from django.apps import apps
 # from django.contrib.postgres.fields import ArrayField, JSONField
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -9,10 +10,11 @@ from graphene_django.debug import DjangoDebug
 from graphene_django.filter import DjangoFilterConnectionField
 
 
-# https://github.com/timothyjlaurent/auto-graphene-django/blob/master/auto-graphene-django/graphql.py
+
+custom_model = []
 
 
-# Set this to your Django application name
+# # Set this to your Django application name
 APPLICATION_NAME = 'smileDesign'
 
 
@@ -96,21 +98,22 @@ def build_query_objs():
 
     for model in models:
         model_name = model.__name__
-        meta_class = create_model_object_meta(model)
+        if model_name not in custom_model:
+            meta_class = create_model_object_meta(model)
 
-        node = type('{model_name}'.format(model_name=model_name),
-                    (DjangoObjectType,),
-                    dict(
-                        Meta=meta_class,
-                        _id=Int(name='_id'),
-                        resolve__id=id_resolver,
+            node = type('{model_name}'.format(model_name=model_name),
+                        (DjangoObjectType,),
+                        dict(
+                            Meta=meta_class,
+                            _id=Int(name='_id'),
+                            resolve__id=id_resolver,
+                        )
                     )
-                )
-        queries.update({model_name: PlainTextNode.Field(node)})
-        queries.update({
-            'all_{model_name}'.format(model_name=model_name):
-                DjangoFilterConnectionField(node, filterset_class=create_model_in_filters(model))
-        })
+            queries.update({model_name: PlainTextNode.Field(node)})
+            queries.update({
+                'all_{model_name}'.format(model_name=model_name):
+                    DjangoFilterConnectionField(node, filterset_class=create_model_in_filters(model))
+            })
     # queries['debug'] = Field(DjangoDebug, name='__debug')
     return queries
 

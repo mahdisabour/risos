@@ -1,6 +1,0 @@
-Python == 3.7.3
-dlib == 19.22.0
-cmake == 3.20.5
-numpy == 1.21.0
-opencv-python == 4.5.2.54
-scipy == 1.7.0

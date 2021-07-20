@@ -9,3 +9,4 @@ def aiConnection(image_url, ai_url="http://ai:4557"):
     }
     response = requests.post(ai_url,json=data)
     return response
+    
