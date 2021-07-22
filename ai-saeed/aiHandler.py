@@ -49,6 +49,7 @@ def get_image_from_url(url):
 
 def removeTeeth(img):
     # Load face detector
+    # Load face detector
     detector = dlib.get_frontal_face_detector()
 
     # Load face key detection model
@@ -56,8 +57,6 @@ def removeTeeth(img):
     predictor = dlib.shape_predictor(predictor_path)
 
     # Load image and convert to HSV
-    # imgfile = 'test.jpeg'
-    # img = cv2.imread (imgfile)
     hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
     # Detect landmarks
@@ -107,12 +106,12 @@ def removeTeeth(img):
     thres = minis[int(minis.shape[0]/2)]
 
     # Generate the output image
-    nimg = img.copy()
+    nimg = cv2.cvtColor(img, cv2.COLOR_BGR2BGRA)
     for z in range(min(xm[0:7]), max(xm[0:7]), 1):
         low, high = int(inlow(z)), int(inhigh(z))
         for w in range(low, high, 1):
             if hsv_img[w,z,1] < thres:
-                nimg[w, z, :] = 0
+                nimg[w, z, 3] = 0
     # cv2.imwrite('output.jpg', nimg)
     return nimg
 
@@ -121,7 +120,8 @@ def removeTeeth(img):
 
 
 def cv2Base64(img):
-    img_as_code = base64.b64encode(img)
+    retval, buffer = cv2.imencode(".png", img)
+    img_as_code = base64.b64encode(buffer)
     return img_as_code
 
 

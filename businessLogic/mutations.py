@@ -1,3 +1,5 @@
+from smileDesign.tasks import aiConnection
+from smileDesign.models import SmileDesignService
 from django.db.models import fields
 from graphene.types import interface
 from graphene.types.inputobjecttype import InputObjectType
@@ -20,6 +22,7 @@ from graphene_django.forms.mutation import DjangoModelFormMutation
 from django import forms
 import django_filters
 import requests
+import base64
 
 from django.core.files import File
 
@@ -32,6 +35,8 @@ class patientPics(graphene.InputObjectType):
 
 
 class CreatePatient(CreateUser):
+
+    smile_design_service = graphene.ID()
     class Arguments:
         patient_pics = patientPics(required=False)
         phone_number = graphene.String(required=True)
@@ -41,6 +46,7 @@ class CreatePatient(CreateUser):
         address = graphene.String(required=False)
         description = graphene.String(required=False)
         profile_doctor_id = graphene.Int(required=True)
+        
 
     def mutate(self, info, **kwargs):
         user = get_user_model()(
@@ -66,10 +72,29 @@ class CreatePatient(CreateUser):
             patient._patient_pics = kwargs["patient_pics"]
             patient.save()
 
+
+        # here to save ai images response
+        smile_design = SmileDesignService(patient=patient)
+        smile_design.save()
+
+        if kwargs["patient_pics"]:
+            patient_pic = patient.patient_pic
+            smile_image = patient_pic.smile_image
+            image_url = smile_image.url
+            ai_response = aiConnection(image_url=image_url)
+            img_data = ai_response.json()["image"]
+            data = base64.b64decode(img_data)
+            with open(f"mediafiles/{smile_design.id}_{patient.id}.png", "wb") as fh:
+                fh.write(data)
+            smile_design.teeth_less_image = f"mediafiles/{smile_design.id}_{patient.id}.png"
+        smile_design.save()
+        # ***********
+
+
         doctor = Doctor.objects.get(
             related_profile=Profile.objects.get(id=kwargs["profile_doctor_id"]))
         patient.doctor.add(doctor)
-        return CreatePatient(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token)
+        return CreatePatient(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token, smile_design_service=smile_design.id)
 
 
 class CreateLab(CreateUser):
@@ -189,47 +214,44 @@ class LabPicMutation(graphene.Mutation):
         return LabPicMutation(status="success")
 
 
+
+class TeethInput(graphene.InputObjectType):
+    tooth_number = graphene.Int(required=True)
+    tooth_service = graphene.String(required=False)
+    cl = graphene.Int(required=False)
+
+
 class ToothMutation(graphene.Mutation):
     status = graphene.String()
 
     class Arguments:
-        tooth_number = graphene.Int(required=True)
+        teeth = graphene.List(TeethInput)
         related_service = graphene.ID(required=True)
-        is_bad_color = graphene.Boolean(required=False)
-        tooth_service = graphene.String(required=False)
-        bad_color_reason = graphene.String(required=False)
 
-    def mutate(self, info, **kwargs):
-        related_service = Service.objects.get(id=kwargs["related_service"])
-        tooth_service = None
-        bad_color_reason = None
-        if kwargs["tooth_service"]:
-            tooth_service = ToothSevice.objects.get(
-                name=kwargs["tooth_service"])
-        if kwargs["bad_color_reason"]:
-            bad_color_reason = BadColorReason.objects.get(
-                name=kwargs["bad_color_reason"])
-        tooth = Tooth.objects.filter(
-            tooth_number=kwargs["tooth_number"],
-            related_service=related_service
-        )
-        if tooth.exists():
-            tooth = tooth.first()
-            if kwargs["is_bad_color"]:
-                tooth.is_bad_color = kwargs["is_bad_color"]
-            if tooth_service:
-                tooth.tooth_service = tooth_service
-            if bad_color_reason:
-                tooth.bad_color_reason = bad_color_reason
-            tooth.save()
-        else:
-            tooth = Tooth(
-                tooth_number=kwargs["tooth_number"],
-                related_service=related_service,
-                is_bad_color=kwargs["is_bad_color"],
-                tooth_service=tooth_service,
-                bad_color_reason=bad_color_reason
-            ).save()
+
+    def mutate(self, info, teeth, related_service):
+        related_service = Service.objects.get(id=related_service)
+        for tooth in teeth:
+            tooth_service = None
+            if "tooth_service" in tooth.keys():
+                tooth_service = ToothSevice.objects.get(
+                    name=tooth["tooth_service"])
+            th = Tooth.objects.filter(
+                tooth_number=tooth["tooth_number"],
+                related_service=related_service
+            )
+            if th.exists():
+                th = th.first()
+                if tooth_service:
+                    th.tooth_service = tooth_service
+                th.save()
+            else:
+                tooth = Tooth(
+                    tooth_number=tooth["tooth_number"],
+                    related_service=related_service,
+                    tooth_service=tooth_service,
+                    cl=tooth["cl"]
+                ).save()
         return ToothMutation(status="success")
 
 

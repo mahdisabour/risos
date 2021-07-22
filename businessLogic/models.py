@@ -15,6 +15,8 @@ from smileDesign.models import SmileDesignService
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 
+from smileDesign.tasks import aiConnection
+
 class ServiceCategory(MP_Node):
     name = models.CharField(max_length=30)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
@@ -99,6 +101,7 @@ class Tooth(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
     tooth_number = models.PositiveIntegerField(validators=[MinValueValidator(18), MaxValueValidator(48)])
     tooth_service = models.ForeignKey(ToothSevice, on_delete=models.CASCADE, blank=True, null=True)
+    cl = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], blank=True, null=True)
     is_bad_color = models.BooleanField(default=False)
     bad_color_reason = models.ForeignKey(BadColorReason, on_delete=models.CASCADE, blank=True, null=True)
     related_service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="Teeth")
@@ -193,6 +196,15 @@ def create_patient_pic(sender, instance, created, **kwargs):
         except:
             pass
 
+
+
+# @receiver(post_save, sender=PatientPic)
+# def send_image_to_ai(sender, instance, created, **kwargs):
+#     smile_image = instance.smile_image
+#     image_url = smile_image.url
+#     ai_response = aiConnection(image_url=image_url)
+
+    
 
 
 # @receiver(post_save, sender=Order)

@@ -9,7 +9,7 @@ pydantic==1.8.2
 numpy==1.21.0
 opencv-python==4.5.2.54
 scipy==1.7.0
-scikit-learn == 0.24.2
-joblib == 1.0.1
-pandas == 1.2.5
-sklearn == 0.24.2
+scikit-learn==0.24.2
+joblib==1.0.1
+pandas==1.2.5
+sklearn

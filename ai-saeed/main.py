@@ -21,6 +21,7 @@ def root(image:Image):
     if not resp["error"]:
         img = removeTeeth(resp["image"])
         img_base_64 = cv2Base64(img)
+        # img_base_64 = "data:image/png;base64, " +  str(img_base_64)
         return {"status_code":"200" , "image":img_base_64}
     else:
         return {"status_code":"400", "image":None} 

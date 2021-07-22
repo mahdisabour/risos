@@ -6,7 +6,6 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 
-
 class SmileCategory(MP_Node):
     name = models.CharField(max_length=30)
     created_at = models.DateTimeField(
@@ -62,15 +61,14 @@ class Tooth(models.Model):
     
 
 class SmileDesignService(models.Model):
-    smile_image = models.ImageField(blank=True, null=True)
-    full_smile_image = models.ImageField(blank=True, null=True)
-    side_image = models.ImageField(blank=True, null=True)
-    optional_image = models.ImageField(blank=True, null=True)
+    teet_less_image = models.ImageField(blank=True, null=True)
+    smile_image_result = models.ImageField(blank=True, null=True)
     created_at = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
     related_smile_type = models.ForeignKey(
         SmileType, on_delete=models.CASCADE, blank=True, null=True)
+    patient = models.OneToOneField("businessLogic.Patient", on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return str(self.id)
