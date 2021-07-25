@@ -25,7 +25,6 @@ import dlib
 import cv2
 from scipy.interpolate import interp1d
 import numpy as np
-from matplotlib import pyplot as plt
 from scipy.interpolate import CubicSpline
 from scipy import signal
 import requests

@@ -5,7 +5,8 @@ services:
         image: risos
         container_name: risos
         command: >
-            sh -c "gunicorn risos.wsgi:application --bind 0.0.0.0:8000"
+            sh -c "python manage.py runserver 0.0.0.0:8000"
+
         ports:
             - "8000:8000"
         environment:
@@ -14,7 +15,11 @@ services:
             - redis
         volumes:
             - static_volume:/home/app/web/staticfiles
+            # - media_files:/home/app/web/mediafiles
+            - /mediafiles:/home/app/web/mediafiles
             - .:/home/app/web/
+            - /data/db.sqlite3:/home/app/web/db.sqlite3/
+            
     redis:
         image: redis:latest
         ports:
@@ -36,6 +41,7 @@ services:
         image: risos
         command: celery -A risos worker --loglevel=debug --concurrency=8
         volumes:
+            - /mediafiles:/home/app/web/mediafiles
             - .:/home/app/web
         depends_on:
             - redis

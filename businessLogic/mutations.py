@@ -35,8 +35,8 @@ class patientPics(graphene.InputObjectType):
 
 
 class CreatePatient(CreateUser):
+    smile_design_id = graphene.ID()
 
-    smile_design_service = graphene.ID()
     class Arguments:
         patient_pics = patientPics(required=False)
         phone_number = graphene.String(required=True)
@@ -46,7 +46,6 @@ class CreatePatient(CreateUser):
         address = graphene.String(required=False)
         description = graphene.String(required=False)
         profile_doctor_id = graphene.Int(required=True)
-        
 
     def mutate(self, info, **kwargs):
         user = get_user_model()(
@@ -55,7 +54,7 @@ class CreatePatient(CreateUser):
         )
         user.set_password(kwargs['phone_number'])
         user.save()
-
+        
         profile_obj = Profile.objects.get(user=user.id)
         token = get_token(user)
         refresh_token = create_refresh_token(user)
@@ -67,34 +66,25 @@ class CreatePatient(CreateUser):
         profile_obj.description = kwargs["description"]
         profile_obj.save()
 
-        patient = Patient.objects.get(related_profile=profile_obj)
-        if kwargs["patient_pics"]:
-            patient._patient_pics = kwargs["patient_pics"]
-            patient.save()
-
-
-        # here to save ai images response
-        smile_design = SmileDesignService(patient=patient)
-        smile_design.save()
-
-        if kwargs["patient_pics"]:
-            patient_pic = patient.patient_pic
-            smile_image = patient_pic.smile_image
-            image_url = smile_image.url
-            ai_response = aiConnection(image_url=image_url)
-            img_data = ai_response.json()["image"]
-            data = base64.b64decode(img_data)
-            with open(f"mediafiles/{smile_design.id}_{patient.id}.png", "wb") as fh:
-                fh.write(data)
-            smile_design.teeth_less_image = f"mediafiles/{smile_design.id}_{patient.id}.png"
-        smile_design.save()
-        # ***********
-
 
         doctor = Doctor.objects.get(
             related_profile=Profile.objects.get(id=kwargs["profile_doctor_id"]))
+
+        
+        patient = Patient.objects.get(related_profile=profile_obj)
+        
+        smile_design_id = None
+        
+        if kwargs["patient_pics"]:
+            patient._patient_pics = kwargs["patient_pics"]
+            smile_design = SmileDesignService()
+            smile_design.save()
+            smile_design_id = smile_design.id
+            patient._smile_design = smile_design
+            patient.save()
+        
         patient.doctor.add(doctor)
-        return CreatePatient(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token, smile_design_service=smile_design.id)
+        return CreatePatient(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token, smile_design_id=smile_design_id)
 
 
 class CreateLab(CreateUser):

@@ -115,7 +115,7 @@ def create_profile_otp(sender, instance, created, **kwargs):
 def send_otp(sender, instance, created, **kwargs):
     if created:
         phone_number = instance.profile.user.username
-        send_sms(phone_number, instance.message)
+        send_sms.apply_async((phone_number, instance.message))
 
 
 

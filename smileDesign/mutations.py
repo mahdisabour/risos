@@ -1,6 +1,6 @@
 from django.db.models.deletion import SET_DEFAULT
 import graphene
-from .models import SmileCategory, SmileColor, SmilePlot, OutRectangle, SmileType, TeethCoordinate, SmileDesignService
+from .models import SmileCategory, SmileColor, SmilePlot, OutRectangle, TeethCoordinate, SmileDesignService
 import requests 
 from businessLogic.models import *
 from .tasks import aiConnection
@@ -70,9 +70,9 @@ class UpdateSmileDesign(graphene.Mutation):
     def mutate(self, info, smile_design_id, smile_design_images, smile_color, smile_category):
         smile_color = SmileColor.objects.filter(name=smile_color).first()
         smile_category = SmileCategory.objects.filter(name=smile_category).first()
-        smile_type = SmileType.objects.filter(related_smile_color=smile_color, related_smile_category=smile_category).first()
         smile_design = SmileDesignService.objects.get(id=smile_design_id)
-        smile_design.related_smile_type = smile_type
+        smile_design.related_smile_color = smile_color
+        smile_design.related_smile_category = smile_category
         if smile_design_images:
             if "teeth_less_image" in smile_design_images.keys():
                 smile_design.teeth_less_image = smile_design_images["teeth_less_image"]

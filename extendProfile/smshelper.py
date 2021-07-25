@@ -1,10 +1,11 @@
 from .melipayamak import Api
+from risos.celery import app
 
 username = '09129472900'
 password = '6322'
 api = Api(username, password)
 
-
+@app.task
 def send_sms(phone_number, msg):
     # customer = Customer.objects.get(id=customer_id)
     # if customer:

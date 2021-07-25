@@ -34,17 +34,6 @@ class SmileColor(MP_Node):
         return self.name
 
 
-class SmileType(models.Model):
-    name = models.CharField(max_length=20)
-    related_smile_category = models.ForeignKey(
-        SmileCategory, on_delete=models.CASCADE)
-    related_smile_color = models.ForeignKey(
-        SmileColor, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return str(self.id)
-
-
 
 class Teeth(models.Model):
     name = models.CharField(max_length=50, blank=True, null=True)
@@ -58,21 +47,41 @@ class Tooth(models.Model):
     tooth_image = models.ImageField(upload_to='Teeth/', blank=True, null=True)
     related_teeth = models.ForeignKey(Teeth, on_delete=models.CASCADE, related_name="Tooths")
 
-    
+
+class FaceShape(models.Model):
+    name = models.CharField(max_length=30)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
+
+    def __str__(self):
+        return self.name
+
 
 class SmileDesignService(models.Model):
-    teet_less_image = models.ImageField(blank=True, null=True)
+    teeth_less_image = models.ImageField(blank=True, null=True)
     smile_image_result = models.ImageField(blank=True, null=True)
     created_at = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
-    related_smile_type = models.ForeignKey(
-        SmileType, on_delete=models.CASCADE, blank=True, null=True)
-    patient = models.OneToOneField("businessLogic.Patient", on_delete=models.CASCADE, blank=True, null=True)
+    related_smile_color = models.ForeignKey(
+        SmileColor, on_delete=models.CASCADE, blank=True, null=True)
+    related_smile_category = models.ForeignKey(
+        SmileCategory, on_delete=models.CASCADE, blank=True, null=True)
+    # patient = models.ForeignKey("businessLogic.Patient", on_delete=models.CASCADE, blank=True, null=True, related_name="smile_designs")
+    STATUSES = (
+        ("ready", "READY"),
+        ("notready", "NOTREADY"),
+    )
+    status = models.CharField(max_length=20, choices=STATUSES, default="notready")
+    shape = models.ForeignKey(FaceShape, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return str(self.id)
 
+
+
+
+# COMMENT ALL COORDINATES
 
 # there is bug in one to one field (related_smile_design)
 class SmilePlot(models.Model):

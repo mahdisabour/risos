@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing_extensions import IntVar
 from notification.models import NotifReceiver, NotifService, Notification
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
@@ -7,6 +8,10 @@ from django.utils.functional import partition
 from treebeard.mp_tree import MP_Node
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+import base64
+from graphene_file_upload.scalars import Upload
+from django.core.files.uploadedfile import InMemoryUploadedFile
+
 
 from extendProfile.models import Profile
 
@@ -15,7 +20,7 @@ from smileDesign.models import SmileDesignService
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 
-from smileDesign.tasks import aiConnection
+from smileDesign.tasks import aiConnection, aiReady
 
 class ServiceCategory(MP_Node):
     name = models.CharField(max_length=30)
@@ -47,7 +52,7 @@ class Patient(models.Model):
         through='Service',
         through_fields=('related_patient', 'related_doctor'),
     )
-    patient_pic = models.OneToOneField("businessLogic.PatientPic", on_delete=models.CASCADE, blank=True, null=True)
+    patient_pic = models.OneToOneField("businessLogic.PatientPic", on_delete=models.CASCADE, blank=True, null=True, related_name="patient")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
 
@@ -183,26 +188,41 @@ class LabPic(models.Model):
 
 @receiver(post_save, sender=Patient)
 def create_patient_pic(sender, instance, created, **kwargs):
+    print("patient created")
     if not created:
-        try:
-            pics = instance._patient_pics
-            PatientPic(
-                smile_image=pics['smile_image'], 
-                full_smile_image=pics['full_smile_image'],
-                side_image=pics['side_image'],
-                optional_image=pics['optional_image'],
-                patient=instance
-            ).save()
-        except:
-            pass
+        pics = instance._patient_pics
+        patient_pic = PatientPic(
+            patient=instance
+        )
+        for key, val in pics.items():
+            if val:
+                if (isinstance(val, InMemoryUploadedFile)):
+                    setattr(patient_pic, key, val)
+                elif(isinstance(val, str)):
+                    print(key, val)
+                    # data = base64.b64decode(val)
+                    # new_path = f"{key}_{isinstance.id}_{datetime.now()}.png"
+                    # image_path = f"./mediafiles/{new_path}"
+                    # with open(image_path, "wb") as f:
+                    #     f.write(data)
+        patient_pic._smile_design = instance._smile_design
+        patient_pic.save()
+            
 
 
-
-# @receiver(post_save, sender=PatientPic)
-# def send_image_to_ai(sender, instance, created, **kwargs):
-#     smile_image = instance.smile_image
-#     image_url = smile_image.url
-#     ai_response = aiConnection(image_url=image_url)
+@receiver(post_save, sender=PatientPic)
+def update_patient_pics(sender, instance, created, **kwargs):
+    print("patient pic created")
+    patient = instance.patient
+    try:
+        smile_design = instance._smile_design
+    except:
+        smile_design = SmileDesignService()
+        smile_design.save()
+    smile_image = instance.smile_image
+    image_url = smile_image.url
+    ai_response = aiConnection.apply_async((image_url, ))
+    aiConnection.apply_async((image_url, ), link=aiReady.s(smile_design.id, patient.id) )
 
     
 
@@ -234,15 +254,5 @@ def create_patient_pic(sender, instance, created, **kwargs):
 #     notif.receivers.set(receivers)
 #     notif.save()
         
-    
 
 
-
-
-# @receiver(post_save, sender=Service)
-# def create_smile_design(sender, instance, created, **kwargs):
-#     if created:
-#         smile_design = SmileDesignService()
-#         smile_design.save()
-#         instance.related_smile_design = smile_design
-#         instance.save()
