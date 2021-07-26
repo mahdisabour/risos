@@ -31,13 +31,9 @@ class NotifReceiver(models.Model):
 class Notification(models.Model):
     created_at = models.DateTimeField(
         auto_now_add=True, verbose_name="Created at")
-    MESSAGES = {
-        ("order completed", "Order Completed"),
-        ("order updated", "Order Updated")
-    }
-    message = models.CharField(max_length=250, choices=MESSAGES)
+    message = models.CharField(max_length=250)
     receivers = models.ManyToManyField(NotifReceiver, related_name="notifications")
-    service = models.ForeignKey(NotifService, on_delete=models.CASCADE, blank=True, null=True)
+    notif_service = models.ForeignKey(NotifService, on_delete=models.CASCADE, blank=True, null=True)
     STATUS = {
         ("success", "SUCCESS"),
         ("failed", "FAILED"),
@@ -50,6 +46,8 @@ class Notification(models.Model):
 
 @receiver(post_save, sender=Notification)
 def sendNotification(sender, instance, created, **kwargs):
+    print("notification signals")
+    print(instance.receivers.all().count())
     if instance.receivers.all().count():
         ids = [receiver.device_id for receiver in instance.receivers.all()]
         print(ids)

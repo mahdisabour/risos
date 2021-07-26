@@ -1,3 +1,4 @@
+from logging import info
 from smileDesign.tasks import aiConnection
 from smileDesign.models import SmileDesignService
 from django.db.models import fields
@@ -85,6 +86,24 @@ class CreatePatient(CreateUser):
         
         patient.doctor.add(doctor)
         return CreatePatient(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token, smile_design_id=smile_design_id)
+
+
+class UpdatePatientPic(graphene.Mutation):
+    status = graphene.String()
+    new_smile_design_id = graphene.ID()
+    class Arguments:
+        patient_pics = patientPics(required=True)
+        patient_id = graphene.ID(required=True)
+
+    def mutate(self, info, patient_pics, patient_id):
+        patient = Patient.objects.get(id=patient_id)
+        patient._patient_pics = patient_pics
+        smile_design = SmileDesignService()
+        smile_design.save()
+        smile_design_id = smile_design.id
+        patient._smile_design = smile_design
+        patient.save()
+        return UpdatePatientPic(status="Success", new_smile_design_id=smile_design_id)
 
 
 class CreateLab(CreateUser):
@@ -302,11 +321,10 @@ class FilterLabByName(graphene.ObjectType):
 
 
 
-
-
 class BusinessLogicMutations(graphene.ObjectType):
     create_lab = CreateLab.Field()
     create_patient = CreatePatient.Field()
+    update_patient_pic = UpdatePatientPic.Field()
     update_order = UpdateOrder.Field()
     create_order = CreateOrder.Field()
     labpic_mutation = LabPicMutation.Field()

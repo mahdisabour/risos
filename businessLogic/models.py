@@ -198,8 +198,8 @@ def create_patient_pic(sender, instance, created, **kwargs):
             if val:
                 if (isinstance(val, InMemoryUploadedFile)):
                     setattr(patient_pic, key, val)
-                elif(isinstance(val, str)):
-                    print(key, val)
+                else:
+                    print(key, val, type(val))
                     # data = base64.b64decode(val)
                     # new_path = f"{key}_{isinstance.id}_{datetime.now()}.png"
                     # image_path = f"./mediafiles/{new_path}"
@@ -207,7 +207,7 @@ def create_patient_pic(sender, instance, created, **kwargs):
                     #     f.write(data)
         patient_pic._smile_design = instance._smile_design
         patient_pic.save()
-            
+        
 
 
 @receiver(post_save, sender=PatientPic)
@@ -227,32 +227,35 @@ def update_patient_pics(sender, instance, created, **kwargs):
     
 
 
-# @receiver(post_save, sender=Order)
-# def notif_base_on_order(sender, instance, created, **kwargs):
-#     if created:
-#         message = "order completed"
-#     else:
-#         message = "order updated"
-#     # patinet_profile = instance.related_service.related_patient
-#     lab_profile = None
-#     try:
-#         doctor_profile = instance.related_service.related_doctor.related_profile
-#         lab_profile = instance.finalized_lab.related_profile
-#     except:
-#         pass
-#     profiles = [doctor_profile, lab_profile]
-#     receivers = [NotifReceiver.objects.filter(profile=profile).first() for profile in profiles if profile]
-#     if NotifService.objects.filter(object_id=instance.id).exists():
-#         notif_service = NotifService.objects.get(object_id=instance.id, object_type="order")
-#     else:
-#         notif_service = NotifService(object_id=instance.id, object_type="order")
-#         notif_service.save()
-#     notif = Notification(
-#         message=message, 
-#         service=notif_service,
-#     )
-#     notif.receivers.set(receivers)
-#     notif.save()
+@receiver(post_save, sender=Order)
+def notif_base_on_order(sender, instance, created, **kwargs):
+    print("order signal")
+    patient_fname = instance.related_service.related_patient.related_profile.first_name
+    patient_lname = instance.related_service.related_patient.related_profile.last_name
+    if created:
+        message = f"order completed - {patient_fname} {patient_lname}"
+    else:
+        message = f"order updated - {patient_fname} {patient_lname}"
+    # patinet_profile = instance.related_service.related_patient
+    lab_profile = None
+    try:
+        doctor_profile = instance.related_service.related_doctor.related_profile
+        lab_profile = instance.finalized_lab.related_profile
+    except:
+        pass
+    profiles = [doctor_profile, lab_profile]
+    receivers = [NotifReceiver.objects.filter(profile=profile).first() for profile in profiles if profile]
+    if NotifService.objects.filter(object_id=instance.id, object_type="order").exists():
+        notif_service = NotifService.objects.get(object_id=instance.id, object_type="order")
+    else:
+        notif_service = NotifService(object_id=instance.id, object_type="order")
+        notif_service.save()
+    notif = Notification(
+        message=message, 
+        notif_service=notif_service,
+    )
+    notif.save()
+    notif.receivers.set(receivers)
         
 
 
