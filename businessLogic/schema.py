@@ -39,47 +39,49 @@ class PlainTextNode(relay.Node):
         return global_id.split(':')
 
 
-class DoctorNode(DjangoObjectType):
-    class Meta:
-        model = Doctor
-        filter_fields = generate_filter_fields(Doctor)
-        interfaces = (PlainTextNode, )
-        filter_order_by=True
-    _id=Int(name='_id')
-    resolve__id=id_resolver
+# class DoctorNode(DjangoObjectType):
+#     class Meta:
+#         model = Doctor
+#         filter_fields = generate_filter_fields(Doctor)
+#         interfaces = (PlainTextNode, )
+#         filter_order_by=True
+#     _id=Int(name='_id')
+#     resolve__id=id_resolver
 
 
-class PatientNode(DjangoObjectType):
-    class Meta:
-        model = Patient
-        filter_fields = generate_filter_fields(Patient)
-        interfaces = (PlainTextNode, )
-        filter_order_by = True
-    _id=Int(name='_id')
-    resolve__id=id_resolver
+# class PatientNode(DjangoObjectType):
+#     class Meta:
+#         model = Patient
+#         filter_fields = generate_filter_fields(Patient)
+#         interfaces = (PlainTextNode, )
+#         filter_order_by = True
+#     _id=Int(name='_id')
+#     resolve__id=id_resolver
 
 
-class PatientFilter(django_filters.FilterSet):
-    filter_patient = django_filters.CharFilter(field_name="related_profile__first_name", lookup_expr='icontains')
+# class PatientFilter(django_filters.FilterSet):
+#     filter_patient = django_filters.CharFilter(field_name="related_profile__first_name", lookup_expr='icontains')
 
-    class Meta:
-        model = Patient
-        fields = []
+#     class Meta:
+#         model = Patient
+#         fields = []
 
 
 class BusinessLogicQueryCustom(ObjectType):
-    doctor = PlainTextNode.Field(DoctorNode)
-    all_doctor = DjangoFilterConnectionField(DoctorNode)
+    pass
+    # doctor = PlainTextNode.Field(DoctorNode)
+    # all_doctor = DjangoFilterConnectionField(DoctorNode)
 
-    patient = PlainTextNode.Field(PatientNode)
-    all_patient = DjangoFilterConnectionField(PatientNode, filterset_class=PatientFilter)
+    # patient = PlainTextNode.Field(PatientNode)
+    # all_patient = DjangoFilterConnectionField(PatientNode, filterset_class=PatientFilter)
 
 
 
 
 
 # custome query
-custom_models = ["Doctor", "Patient"]
+custom_models = []
+# custom_models = ["Doctor"]
 
 
 # Set this to your Django application name
@@ -114,12 +116,14 @@ def create_model_in_filters(model):
         if not isinstance(f, exempted_field_types) and f.name not in exempted_field_names and isinstance(f, CharField)}
 
     custome_filter = {}
-    if model_name == "Lab":
+    if model_name == "Lab" or "Patient":
         custome_filter = {'search_by_name': django_filters.CharFilter(
             field_name='related_profile__first_name', lookup_expr='icontains')}
 
     if model_name == "Order":
         custome_filter = {'search_by_name': django_filters.CharFilter(
+            field_name='related_service__related_patient__related_profile__first_name', lookup_expr='icontains')}
+        custome_filter1 = {'search_by_name': django_filters.CharFilter(
             field_name='related_service__related_patient__related_profile__first_name', lookup_expr='icontains')}
 
     in_filters.update(search_filters)

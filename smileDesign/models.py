@@ -67,7 +67,8 @@ class SmileDesignService(models.Model):
         SmileColor, on_delete=models.CASCADE, blank=True, null=True)
     related_smile_category = models.ForeignKey(
         SmileCategory, on_delete=models.CASCADE, blank=True, null=True)
-    # patient = models.ForeignKey("businessLogic.Patient", on_delete=models.CASCADE, blank=True, null=True, related_name="smile_designs")
+    patient = models.ForeignKey("businessLogic.Patient", on_delete=models.CASCADE, blank=True, null=True, related_name="smile_designs")
+    doctor = models.ForeignKey("businessLogic.Doctor", on_delete=models.CASCADE, blank=True, null=True, related_name="smile_designs")
     STATUSES = (
         ("ready", "READY"),
         ("notready", "NOTREADY"),

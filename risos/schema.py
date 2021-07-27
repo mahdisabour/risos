@@ -12,7 +12,7 @@ from notification.schema import notificationQuery
 from businessLogic.mutations import FilterPatient, FilterOrderByPatient, FilterLabByName
 
 from smileDesign.models import SmileDesignService
-from graphene_subscriptions.events import CREATED, UPDATED
+# from graphene_subscriptions.events import CREATED, UPDATED
 
 
 
@@ -29,16 +29,16 @@ class Mutations(BaseMutation, BusinessLogicMutations, NotificationMutations, Smi
 
 
 
-class Subscription(graphene.ObjectType):
-    ai_status = graphene.String()
+# class Subscription(graphene.ObjectType):
+#     ai_status = graphene.String()
 
-    def resolve_ai_status(self, info):
-        return self.filter(
-            lambda event:
-                event.operation == UPDATED and
-                isinstance(event.instance, SmileDesignService) and
-                event.instance.status == "ready"
-        ).map(lambda event: event.instance)
+#     def resolve_ai_status(self, info):
+#         return self.filter(
+#             lambda event:
+#                 event.operation == UPDATED and
+#                 isinstance(event.instance, SmileDesignService) and
+#                 event.instance.status == "ready"
+#         ).map(lambda event: event.instance)
 
 
 schema = graphene.Schema(query=Query, mutation=Mutations)

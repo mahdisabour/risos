@@ -15,8 +15,8 @@ services:
             - redis
         volumes:
             - static_volume:/home/app/web/staticfiles
-            # - media_files:/home/app/web/mediafiles
-            - /mediafiles:/home/app/web/mediafiles
+            - media_files:/home/app/web/mediafiles
+            # - /mediafiles:/home/app/web/mediafiles
             - .:/home/app/web/
             - /data/db.sqlite3:/home/app/web/db.sqlite3/
             
@@ -59,19 +59,26 @@ services:
         ports:
             - "4557:4557"
 
-    # nginx:
-    #     image: risos_nginx
-    #     container_name: nginx
-    #     restart: always
-    #     volumes:
-    #         - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
-    #         - static_volume:/home/app/web/staticfiles
-    #         - media_files:/home/app/web/mediafiles
-    #     ports:
-    #         - 80:80
-    #         - 443:443
-    #     depends_on:
-    #         - risos
+    nginx:
+        image: risos_nginx
+        container_name: nginx
+        restart: always
+        volumes:
+            - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+            - static_volume:/home/app/web/staticfiles
+            - media_files:/home/app/web/mediafiles
+            - ./data/certbot/conf:/etc/letsencrypt
+            - ./data/certbot/www:/var/www/certbot
+        ports:
+            - 80:80
+            - 443:443
+        depends_on:
+            - risos
+    certbot:
+        image: certbot/certbot
+        volumes:
+            - ./data/certbot/conf:/etc/letsencrypt
+            - ./data/certbot/www:/var/www/certbot
 
 
 volumes:

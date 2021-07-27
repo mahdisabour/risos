@@ -1,5 +1,5 @@
 curl http://localhost:8000/graphql/ \
-  -F operations='{ "query": "mutation ($profilePic: Upload!) { createPatient(patientPics: {smileImage:$profilePic fullSmileImage:$profilePic sideImage:$profilePic optionalImage:\"fsds\"} phoneNumber:\"225845301352\" profileDoctorId:1){profile} }", "variables": { "profilePic": null } }' \
+  -F operations='{ "query": "mutation ($profilePic: Upload!) { createPatient(patientPics: {smileImage:$profilePic fullSmileImage:$profilePic sideImage:$profilePic} phoneNumber:\"225845306392\" profileDoctorId:1){profile} }", "variables": { "profilePic": null } }' \
   -F map='{ "0": ["variables.profilePic"] }' \
   -F 0=@test.jpeg
 

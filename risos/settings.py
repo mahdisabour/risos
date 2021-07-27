@@ -156,7 +156,7 @@ ADMINLTE_SETTINGS = {
 
     # if you are use custom menu, which will not effective below!
 
-    'show_apps': ['django_admin_settings', 'auth', 'main', 'businessLogic', 'smileDesign', 'extendProfile'],
+    'show_apps': ['django_admin_settings', 'auth', 'main', 'businessLogic', 'smileDesign', 'extendProfile', 'notification'],
     'main_navigation_app': 'django_admin_settings',
     'icons': {
         'businessLogic': {

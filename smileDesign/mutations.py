@@ -79,6 +79,8 @@ class UpdateSmileDesign(graphene.Mutation):
             if "smile_image_result" in smile_design_images.keys():
                 smile_design.teeth_less_image = smile_design_images["smile_image_result"]
             smile_design.save()
+        else:
+            smile_design.save()
         return UpdateSmileDesign(status="Success")
 
 

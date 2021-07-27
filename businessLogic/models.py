@@ -11,6 +11,8 @@ from django.dispatch import receiver
 import base64
 from graphene_file_upload.scalars import Upload
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from PIL import Image
+from io import BytesIO
 
 
 from extendProfile.models import Profile
@@ -52,7 +54,7 @@ class Patient(models.Model):
         through='Service',
         through_fields=('related_patient', 'related_doctor'),
     )
-    patient_pic = models.OneToOneField("businessLogic.PatientPic", on_delete=models.CASCADE, blank=True, null=True, related_name="patient")
+    # patient_pic = models.OneToOneField("businessLogic.PatientPic", on_delete=models.CASCADE, blank=True, null=True, related_name="patient")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
 
@@ -76,6 +78,7 @@ class Service(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
     related_smile_design = models.ForeignKey(SmileDesignService, blank=True, null=True, on_delete=models.CASCADE)
+    central_size = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return "Service #" + str(self.id)
@@ -169,6 +172,7 @@ class PatientPic(models.Model):
     full_smile_image = models.ImageField(blank=True, null=True)
     side_image = models.ImageField(blank=True, null=True)
     optional_image = models.ImageField(blank=True, null=True)
+    patient = models.OneToOneField(Patient, on_delete=models.CASCADE, blank=True, null=True, related_name="patient_pic")
 
 
 class LabPic(models.Model):
@@ -199,12 +203,12 @@ def create_patient_pic(sender, instance, created, **kwargs):
                 if (isinstance(val, InMemoryUploadedFile)):
                     setattr(patient_pic, key, val)
                 else:
-                    print(key, val, type(val))
-                    # data = base64.b64decode(val)
-                    # new_path = f"{key}_{isinstance.id}_{datetime.now()}.png"
-                    # image_path = f"./mediafiles/{new_path}"
-                    # with open(image_path, "wb") as f:
-                    #     f.write(data)
+                    data = base64.b64decode(val)
+                    new_path = f"{key}_{instance.id}_{datetime.now()}.png"
+                    image_path = f"./mediafiles/{new_path}"
+                    with open(image_path, "wb") as f:
+                        f.write(data)
+                    setattr(patient_pic, key, new_path)
         patient_pic._smile_design = instance._smile_design
         patient_pic.save()
         
@@ -221,7 +225,7 @@ def update_patient_pics(sender, instance, created, **kwargs):
         smile_design.save()
     smile_image = instance.smile_image
     image_url = smile_image.url
-    ai_response = aiConnection.apply_async((image_url, ))
+    # ai_response = aiConnection.apply_async((image_url, ))
     aiConnection.apply_async((image_url, ), link=aiReady.s(smile_design.id, patient.id) )
 
     

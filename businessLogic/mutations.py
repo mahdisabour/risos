@@ -24,6 +24,7 @@ from django import forms
 import django_filters
 import requests
 import base64
+import json
 
 from django.core.files import File
 
@@ -36,7 +37,6 @@ class patientPics(graphene.InputObjectType):
 
 
 class CreatePatient(CreateUser):
-    smile_design_id = graphene.ID()
 
     class Arguments:
         patient_pics = patientPics(required=False)
@@ -74,36 +74,36 @@ class CreatePatient(CreateUser):
         
         patient = Patient.objects.get(related_profile=profile_obj)
         
-        smile_design_id = None
         
         if kwargs["patient_pics"]:
             patient._patient_pics = kwargs["patient_pics"]
-            smile_design = SmileDesignService()
+            smile_design = SmileDesignService(patient=patient, doctor=doctor)
             smile_design.save()
-            smile_design_id = smile_design.id
             patient._smile_design = smile_design
             patient.save()
         
         patient.doctor.add(doctor)
-        return CreatePatient(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token, smile_design_id=smile_design_id)
+        return CreatePatient(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token)
 
 
-class UpdatePatientPic(graphene.Mutation):
-    status = graphene.String()
-    new_smile_design_id = graphene.ID()
-    class Arguments:
-        patient_pics = patientPics(required=True)
-        patient_id = graphene.ID(required=True)
+# class UpdatePatientPic(graphene.Mutation):
+#     status = graphene.String()
+#     class Arguments:
+#         patient_pics = patientPics(required=True)
+#         patient_id = graphene.ID(required=True)
 
-    def mutate(self, info, patient_pics, patient_id):
-        patient = Patient.objects.get(id=patient_id)
-        patient._patient_pics = patient_pics
-        smile_design = SmileDesignService()
-        smile_design.save()
-        smile_design_id = smile_design.id
-        patient._smile_design = smile_design
-        patient.save()
-        return UpdatePatientPic(status="Success", new_smile_design_id=smile_design_id)
+#     def mutate(self, info, patient_pics, patient_id):
+#         user_doctor = info.context.user
+#         profile_doctor = Profile.objects.get(user=user_doctor)
+#         doctor = Doctor.objects.get(related_profile=profile_doctor)
+#         patient = Patient.objects.get(id=patient_id)
+#         patient._patient_pics = patient_pics
+#         smile_design = SmileDesignService(patient=patient, doctor=doctor)
+#         smile_design.save()
+#         smile_design_id = smile_design.id
+#         patient._smile_design = smile_design
+#         patient.save()
+#         return UpdatePatientPic(status="Success")
 
 
 class CreateLab(CreateUser):
@@ -265,6 +265,36 @@ class ToothMutation(graphene.Mutation):
 
 
 
+class ToothMutationJson(graphene.Mutation):
+    status = graphene.String()
+
+    class Arguments:
+        json_object = graphene.JSONString(required=False)
+        related_service = graphene.ID(required=True)
+
+    def mutate(self, info, related_service, json_object):
+        related_service = Service.objects.get(id=related_service)
+        # print(Service.objects.filter(id=related_service).exists())
+        print(json_object)
+        tooth = None
+        data = json.loads(json_object)
+        for key, val in data.items():
+            tooth_number = int(key)
+            if Tooth.objects.filter(related_service=related_service, tooth_number=tooth_number).exists:
+                tooth = Tooth.objects.get(related_service=related_service, tooth_number=tooth_number)
+            else:
+                tooth = Tooth(related_service=related_service, tooth_number=tooth_number)
+            tooth_service = ToothSevice.objects.get(name=val["chosenService"])
+            cl = val["cl"]
+            tooth.tooth_service = tooth_service
+            tooth.cl = cl
+            tooth.save()
+            return ToothMutationJson(status="Success")
+        
+
+
+
+
 # search part
 # bugggggggggg
 class PatientType(DjangoObjectType):
@@ -324,12 +354,13 @@ class FilterLabByName(graphene.ObjectType):
 class BusinessLogicMutations(graphene.ObjectType):
     create_lab = CreateLab.Field()
     create_patient = CreatePatient.Field()
-    update_patient_pic = UpdatePatientPic.Field()
+    # update_patient_pic = UpdatePatientPic.Field()
     update_order = UpdateOrder.Field()
     create_order = CreateOrder.Field()
     labpic_mutation = LabPicMutation.Field()
     create_service = CreateService.Field()
     tooth_mutation = ToothMutation.Field()
+    tooth_mutation_json = ToothMutationJson.Field()
 
 
     

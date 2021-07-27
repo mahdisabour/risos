@@ -17,7 +17,8 @@ class CreateDevice(graphene.Mutation):
 
 
     def mutate(self, info, Profile_id, device_id):
-        # user = info.context.user
+        user = info.context.user
+        print(user.id)
         # token = info.context.META.get("HTTP_TOKEN")
         # print(get_payload(token, info.context))
         # print(token)
