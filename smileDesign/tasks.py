@@ -2,6 +2,7 @@ from risos.celery import app
 import requests
 import base64
 from .models import FaceShape, SmileDesignService
+import os
 
 @app.task
 def aiConnection(image_url, ai_url="http://ai:4557"):

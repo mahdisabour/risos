@@ -1,6 +1,52 @@
 version: '3.7'
 
 services:
+    # risos:
+    #     image: risos
+    #     container_name: risos
+    #     command: >
+    #         sh -c "python manage.py runserver 0.0.0.0:8000"
+
+    #     ports:
+    #         - "8000:8000"
+    #     environment:
+    #         - REDIS_HOST=redis
+    #     depends_on:
+    #         - redis
+    #     volumes:
+    #         - static_volume:/home/app/web/staticfiles
+    #         - media_files:/home/app/web/mediafiles
+    #         # - /mediafiles:/home/app/web/mediafiles
+    #         - .:/home/app/web/
+    #         - /data/db.sqlite3:/home/app/web/db.sqlite3/
+            
+    # redis:
+    #     image: redis:latest
+    #     ports:
+    #         - "6379:6379"
+
+
+    # db:
+    #     image: postgres:12.0-alpine
+    #     volumes:
+    #         - postgres_data:/var/lib/postgresql/data/
+    #     env_file:
+    #         - ./.env.prod.db
+    #     ports:
+    #         - "5432:5432"
+        
+
+    celery:
+        restart: always
+        image: risos
+        command: celery -A risos worker --loglevel=debug --concurrency=8
+        volumes:
+            - media_files:/home/app/web/mediafiles
+            - .:/home/app/web
+        depends_on:
+            - redis
+
+
     risos:
         image: risos
         container_name: risos
@@ -24,28 +70,6 @@ services:
         image: redis:latest
         ports:
             - "6379:6379"
-
-
-    # db:
-    #     image: postgres:12.0-alpine
-    #     volumes:
-    #         - postgres_data:/var/lib/postgresql/data/
-    #     env_file:
-    #         - ./.env.prod.db
-    #     ports:
-    #         - "5432:5432"
-        
-
-    celery:
-        restart: always
-        image: risos
-        command: celery -A risos worker --loglevel=debug --concurrency=8
-        volumes:
-            - /mediafiles:/home/app/web/mediafiles
-            - .:/home/app/web
-        depends_on:
-            - redis
-            - risos
 
     ai:
         image: ai
@@ -79,6 +103,7 @@ services:
         volumes:
             - ./data/certbot/conf:/etc/letsencrypt
             - ./data/certbot/www:/var/www/certbot
+            - media_files:/home/app/web/mediafiles
 
 
 volumes:

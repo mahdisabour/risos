@@ -123,8 +123,6 @@ def create_model_in_filters(model):
     if model_name == "Order":
         custome_filter = {'search_by_name': django_filters.CharFilter(
             field_name='related_service__related_patient__related_profile__first_name', lookup_expr='icontains')}
-        custome_filter1 = {'search_by_name': django_filters.CharFilter(
-            field_name='related_service__related_patient__related_profile__first_name', lookup_expr='icontains')}
 
     in_filters.update(search_filters)
     in_filters.update(custome_filter)
