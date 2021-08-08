@@ -9,14 +9,14 @@ from smileDesign.mutations import SmileDesignMutations
 from extendProfile.schema import extendProfileQuery
 from smileDesign.schema import smileDesignQuery
 from notification.schema import notificationQuery
-from businessLogic.mutations import FilterPatient, FilterOrderByPatient, FilterLabByName
+# from businessLogic.mutations import FilterPatient, FilterOrderByPatient, FilterLabByName
 
 from smileDesign.models import SmileDesignService
 # from graphene_subscriptions.events import CREATED, UPDATED
 
 
 
-class Query(BusinessLogicQuery, BusinessLogicQueryCustom, smileDesignQuery, extendProfileQuery, notificationQuery, FilterPatient, FilterOrderByPatient, FilterLabByName, graphene.ObjectType):
+class Query(BusinessLogicQuery, BusinessLogicQueryCustom, smileDesignQuery, extendProfileQuery, notificationQuery, graphene.ObjectType):
     # This class will inherit from multiple Queries
     # as we begin to add more apps to our project
     pass

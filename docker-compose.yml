@@ -1,30 +1,6 @@
 version: '3.7'
 
 services:
-    # risos:
-    #     image: risos
-    #     container_name: risos
-    #     command: >
-    #         sh -c "python manage.py runserver 0.0.0.0:8000"
-
-    #     ports:
-    #         - "8000:8000"
-    #     environment:
-    #         - REDIS_HOST=redis
-    #     depends_on:
-    #         - redis
-    #     volumes:
-    #         - static_volume:/home/app/web/staticfiles
-    #         - media_files:/home/app/web/mediafiles
-    #         # - /mediafiles:/home/app/web/mediafiles
-    #         - .:/home/app/web/
-    #         - /data/db.sqlite3:/home/app/web/db.sqlite3/
-            
-    # redis:
-    #     image: redis:latest
-    #     ports:
-    #         - "6379:6379"
-
 
     # db:
     #     image: postgres:12.0-alpine
@@ -62,7 +38,6 @@ services:
         volumes:
             - static_volume:/home/app/web/staticfiles
             - media_files:/home/app/web/mediafiles
-            # - /mediafiles:/home/app/web/mediafiles
             - .:/home/app/web/
             - /data/db.sqlite3:/home/app/web/db.sqlite3/
             
@@ -74,7 +49,7 @@ services:
     ai:
         image: ai
         container_name: ai
-        command: uvicorn main:app --host 0.0.0.0 --port 4557 --reload --debug --workers 3
+        command: uvicorn main:app --host 0.0.0.0 --port 4557 --reload 
         volumes:
             - ./ai-saeed:/app
         depends_on:
@@ -83,27 +58,27 @@ services:
         ports:
             - "4557:4557"
 
-    nginx:
-        image: risos_nginx
-        container_name: nginx
-        restart: always
-        volumes:
-            - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
-            - static_volume:/home/app/web/staticfiles
-            - media_files:/home/app/web/mediafiles
-            - ./data/certbot/conf:/etc/letsencrypt
-            - ./data/certbot/www:/var/www/certbot
-        ports:
-            - 80:80
-            - 443:443
-        depends_on:
-            - risos
-    certbot:
-        image: certbot/certbot
-        volumes:
-            - ./data/certbot/conf:/etc/letsencrypt
-            - ./data/certbot/www:/var/www/certbot
-            - media_files:/home/app/web/mediafiles
+    # nginx:
+    #     image: risos_nginx
+    #     container_name: nginx
+    #     restart: always
+    #     volumes:
+    #         - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+    #         - static_volume:/home/app/web/staticfiles
+    #         - media_files:/home/app/web/mediafiles
+    #         - ./data/certbot/conf:/etc/letsencrypt
+    #         - ./data/certbot/www:/var/www/certbot
+    #     ports:
+    #         - 80:80
+    #         - 443:443
+    #     depends_on:
+    #         - risos
+    # certbot:
+    #     image: certbot/certbot
+    #     volumes:
+    #         - ./data/certbot/conf:/etc/letsencrypt
+    #         - ./data/certbot/www:/var/www/certbot
+    #         - media_files:/home/app/web/mediafiles
 
 
 volumes:

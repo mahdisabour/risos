@@ -12,7 +12,7 @@ def pushNotification(msg, devices_ids, notif_inatance):
     }
 
     data = {
-        'app_ids': ['YOUR_APP_ID', ],
+        'app_ids': ['5dn6jvvkzomyl0je', ],
         'data': {
             'title': 'test title',
             'content': 'test content',

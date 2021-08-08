@@ -112,7 +112,13 @@ def removeTeeth(img):
             if hsv_img[w,z,1] < thres:
                 nimg[w, z, 3] = 0
     # cv2.imwrite('output.jpg', nimg)
+    # scale_percent = 30 # percent of original size
+    # width = int(nimg.shape[1] * scale_percent / 100)
+    # height = int(nimg.shape[0] * scale_percent / 100)
+    # dim = (width, height)
+    # resized = cv2.resize(nimg, dim, interpolation = cv2.INTER_AREA)
     return nimg
+    # return resized
 
 
 

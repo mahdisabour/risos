@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing_extensions import IntVar
 from notification.models import NotifReceiver, NotifService, Notification
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -24,6 +24,28 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 from smileDesign.tasks import aiConnection, aiReady
 
+
+class SoftDeleteManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(deleted_at__isnull=True)
+
+
+class SoftDeleteModel(models.Model):
+    deleted_at = models.DateTimeField(null=True, default=None)
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
+    def soft_delete(self):
+        self.deleted_at = datetime.now()
+        self.save()
+
+    def restore(self):
+        self.deleted_at = None
+        self.save()
+
+    class Meta:
+        abstract = True
+
 class ServiceCategory(MP_Node):
     name = models.CharField(max_length=30)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
@@ -39,7 +61,8 @@ class ServiceCategory(MP_Node):
 
 class Doctor(models.Model):
     related_profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
-    rating = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(10)], default=5)
+    rating = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(5)], default=0)
+    rate_size = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
 
@@ -47,7 +70,7 @@ class Doctor(models.Model):
         return str(self.id)
 
 
-class Patient(models.Model):
+class Patient(SoftDeleteModel):
     related_profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
     doctor = models.ManyToManyField(
         Doctor,
@@ -66,7 +89,8 @@ class Lab(models.Model):
     related_profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')
-    rating = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(10)], default=5)
+    rating = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(5)], default=0)
+    rate_size = models.IntegerField(default=0)
 
     def __str__(self):
         return str(self.related_profile.first_name)
@@ -194,23 +218,26 @@ class LabPic(models.Model):
 def create_patient_pic(sender, instance, created, **kwargs):
     print("patient created")
     if not created:
-        pics = instance._patient_pics
-        patient_pic = PatientPic(
-            patient=instance
-        )
-        for key, val in pics.items():
-            if val:
-                if (isinstance(val, InMemoryUploadedFile)):
-                    setattr(patient_pic, key, val)
-                else:
-                    data = base64.b64decode(val)
-                    new_path = f"{key}_{instance.id}_{datetime.now()}.png"
-                    image_path = f"./mediafiles/{new_path}"
-                    with open(image_path, "wb") as f:
-                        f.write(data)
-                    setattr(patient_pic, key, new_path)
-        patient_pic._smile_design = instance._smile_design
-        patient_pic.save()
+        try:
+            pics = instance._patient_pics
+            patient_pic = PatientPic(
+                patient=instance
+            )
+            for key, val in pics.items():
+                if val:
+                    if (isinstance(val, InMemoryUploadedFile)):
+                        setattr(patient_pic, key, val)
+                    else:
+                        data = base64.b64decode(val)
+                        new_path = f"{key}_{instance.id}_{datetime.now()}.png"
+                        image_path = f"./mediafiles/{new_path}"
+                        with open(image_path, "wb") as f:
+                            f.write(data)
+                        setattr(patient_pic, key, new_path)
+            patient_pic._smile_design = instance._smile_design
+            patient_pic.save()
+        except:
+            pass
         
 
 
@@ -235,11 +262,11 @@ def update_patient_pics(sender, instance, created, **kwargs):
 def notif_base_on_order(sender, instance, created, **kwargs):
     print("order signal")
     patient_fname = instance.related_service.related_patient.related_profile.first_name
-    patient_lname = instance.related_service.related_patient.related_profile.last_name
+    # patient_lname = instance.related_service.related_patient.related_profile.last_name
     if created:
-        message = f"order completed - {patient_fname} {patient_lname}"
+        message = f"order completed - {patient_fname}"
     else:
-        message = f"order updated - {patient_fname} {patient_lname}"
+        message = f"order updated - {patient_fname}"
     # patinet_profile = instance.related_service.related_patient
     lab_profile = None
     try:
@@ -260,6 +287,7 @@ def notif_base_on_order(sender, instance, created, **kwargs):
     )
     notif.save()
     notif.receivers.set(receivers)
+    notif.save()
         
 
 

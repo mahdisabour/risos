@@ -1,4 +1,6 @@
 from logging import info
+
+from django.db.models.fields import related
 from smileDesign.tasks import aiConnection
 from smileDesign.models import SmileDesignService
 from django.db.models import fields
@@ -67,13 +69,10 @@ class CreatePatient(CreateUser):
         profile_obj.description = kwargs["description"]
         profile_obj.save()
 
-
         doctor = Doctor.objects.get(
             related_profile=Profile.objects.get(id=kwargs["profile_doctor_id"]))
 
-        
         patient = Patient.objects.get(related_profile=profile_obj)
-        
         
         if kwargs["patient_pics"]:
             patient._patient_pics = kwargs["patient_pics"]
@@ -86,24 +85,40 @@ class CreatePatient(CreateUser):
         return CreatePatient(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token)
 
 
-# class UpdatePatientPic(graphene.Mutation):
-#     status = graphene.String()
-#     class Arguments:
-#         patient_pics = patientPics(required=True)
-#         patient_id = graphene.ID(required=True)
+class DeletePatient(graphene.Mutation):
+    status = graphene.String()
+    class Arguments:
+        patient_id = graphene.Int(required=True)
+        # doctor_id = graphene.Int(required=True)
 
-#     def mutate(self, info, patient_pics, patient_id):
-#         user_doctor = info.context.user
-#         profile_doctor = Profile.objects.get(user=user_doctor)
-#         doctor = Doctor.objects.get(related_profile=profile_doctor)
-#         patient = Patient.objects.get(id=patient_id)
-#         patient._patient_pics = patient_pics
-#         smile_design = SmileDesignService(patient=patient, doctor=doctor)
-#         smile_design.save()
-#         smile_design_id = smile_design.id
-#         patient._smile_design = smile_design
-#         patient.save()
-#         return UpdatePatientPic(status="Success")
+    def mutate(self, info, patient_id):
+        patient = Patient.objects.get(id=patient_id)
+        # doctor = Doctor.objects.get(id=doctor_id)
+        # patient.doctor.remove(doctor)
+        # patient.save()
+        patient.soft_delete()
+        return DeletePatient(status="Success")
+        
+
+
+
+class UpdatePatientPic(graphene.Mutation):
+    status = graphene.String()
+    class Arguments:
+        patient_pics = patientPics(required=True)
+        patient_id = graphene.Int(required=True)
+        smile_design_id = graphene.Int(required=True)
+
+    def mutate(self, info, patient_pics, patient_id, smile_design_id):
+        # user_doctor = info.context.user
+        # profile_doctor = Profile.objects.get(user=user_doctor)
+        # doctor = Doctor.objects.get(related_profile=profile_doctor)
+        patient = Patient.objects.get(id=patient_id)
+        patient._patient_pics = patient_pics
+        smile_design = SmileDesignService.objects.get(id=smile_design_id)
+        patient._smile_design = smile_design
+        patient.save()
+        return UpdatePatientPic(status="Success")
 
 
 class CreateLab(CreateUser):
@@ -271,16 +286,16 @@ class ToothMutationJson(graphene.Mutation):
     class Arguments:
         json_object = graphene.JSONString(required=False)
         related_service = graphene.ID(required=True)
+        central_size = graphene.String(required=False)
 
-    def mutate(self, info, related_service, json_object):
+    def mutate(self, info, related_service, json_object, central_size):
         related_service = Service.objects.get(id=related_service)
-        # print(Service.objects.filter(id=related_service).exists())
-        print(json_object)
-        tooth = None
-        data = json.loads(json_object)
+        related_service.central_size = int(central_size)
+        related_service.save()
+        data = json_object
         for key, val in data.items():
             tooth_number = int(key)
-            if Tooth.objects.filter(related_service=related_service, tooth_number=tooth_number).exists:
+            if Tooth.objects.filter(related_service=related_service, tooth_number=tooth_number).exists():
                 tooth = Tooth.objects.get(related_service=related_service, tooth_number=tooth_number)
             else:
                 tooth = Tooth(related_service=related_service, tooth_number=tooth_number)
@@ -293,74 +308,40 @@ class ToothMutationJson(graphene.Mutation):
         
 
 
+class UpdateLabRate(graphene.Mutation):
+    rate = graphene.Float()
 
+    class Arguments:
+        lab_id = graphene.Int(required=True)
+        rate = graphene.Float(required=True)
 
-# search part
-# bugggggggggg
-class PatientType(DjangoObjectType):
-    class Meta:
-        model = Patient
-
-class FilterPatient(graphene.ObjectType):
-    filtered_patients = graphene.List(PatientType, name=graphene.String(
-        required=True), doctor_id=graphene.ID(required=True))
-
-    def resolve_filtered_patients(self, info, name, doctor_id):
-        filtered_patients = Patient.objects.filter(
-            (Q(related_profile__first_name__icontains=name) |
-             Q(related_profile__last_name__icontains=name)) &
-            Q(doctor__id=doctor_id)
-        )
-        return filtered_patients.all()
-
-
-class OrderType(DjangoObjectType):
-    class Meta:
-        model = Order
-
-
-class FilterOrderByPatient(graphene.ObjectType):
-    filtered_orders = graphene.List(OrderType, name=graphene.String(
-        required=True), doctor_id=graphene.ID(required=True))
-
-
-    def resolve_filtered_orders(self, info, name, doctor_id):
-        filtered_orders = Order.objects.filter(
-            (Q(related_service__related_patient__related_profile__first_name__icontains=name) |
-             Q(related_service__related_patient__related_profile__last_name__icontains=name)) &
-            Q(related_service__related_doctor__id=doctor_id)
-        )
-        return filtered_orders.all()
-
-
-class LabType(DjangoObjectType):
-    class Meta:
-        model = Lab
-        
-class FilterLabByName(graphene.ObjectType):
-    filtered_lab = graphene.List(LabType, name=graphene.String(
-        required=True))
-
-
-    def resolve_filtered_lab(self, info, name):
-        filtered_lab = Lab.objects.filter(
-            (Q(related_profile__first_name__icontains=name) |
-             Q(related_profile__last_name__icontains=name)) 
-        )
-        return filtered_lab.all()
+    def mutate(self, info, lab_id, rate):
+        lab = Lab.objects.get(id=lab_id)
+        rate = (lab.rating * lab.rate_size + rate) / (lab.rate_size + 1)
+        lab.rating = rate
+        lab.rate_size = lab.rate_size + 1
+        lab.save()
+        return UpdateLabRate(rate=rate)
 
 
 
 class BusinessLogicMutations(graphene.ObjectType):
     create_lab = CreateLab.Field()
     create_patient = CreatePatient.Field()
-    # update_patient_pic = UpdatePatientPic.Field()
+    delete_patient = DeletePatient.Field()
+    update_patient_pic = UpdatePatientPic.Field()
     update_order = UpdateOrder.Field()
     create_order = CreateOrder.Field()
     labpic_mutation = LabPicMutation.Field()
+    update_lab_rate = UpdateLabRate.Field()
     create_service = CreateService.Field()
     tooth_mutation = ToothMutation.Field()
     tooth_mutation_json = ToothMutationJson.Field()
 
 
     
+# search part
+# this part should be here !!!!!!!!!!!!
+class PatientType(DjangoObjectType):
+    class Meta:
+        model = Patient

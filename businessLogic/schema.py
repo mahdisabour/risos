@@ -69,11 +69,11 @@ class PlainTextNode(relay.Node):
 
 class BusinessLogicQueryCustom(ObjectType):
     pass
-    # doctor = PlainTextNode.Field(DoctorNode)
-    # all_doctor = DjangoFilterConnectionField(DoctorNode)
+#     doctor = PlainTextNode.Field(DoctorNode)
+#     all_doctor = DjangoFilterConnectionField(DoctorNode)
 
-    # patient = PlainTextNode.Field(PatientNode)
-    # all_patient = DjangoFilterConnectionField(PatientNode, filterset_class=PatientFilter)
+#     patient = PlainTextNode.Field(PatientNode)
+#     all_patient = DjangoFilterConnectionField(PatientNode)
 
 
 
@@ -81,7 +81,7 @@ class BusinessLogicQueryCustom(ObjectType):
 
 # custome query
 custom_models = []
-# custom_models = ["Doctor"]
+# custom_models = ["Doctor", "Patient"]
 
 
 # Set this to your Django application name
@@ -116,9 +116,24 @@ def create_model_in_filters(model):
         if not isinstance(f, exempted_field_types) and f.name not in exempted_field_names and isinstance(f, CharField)}
 
     custome_filter = {}
-    if model_name == "Lab" or "Patient":
+    if model_name == "Patient":
         custome_filter = {'search_by_name': django_filters.CharFilter(
             field_name='related_profile__first_name', lookup_expr='icontains')}
+
+    if model_name == "Lab":
+        custome_filter = {
+            'search_by_name': django_filters.CharFilter(
+                field_name='related_profile__first_name', lookup_expr='icontains'),
+            "sort_by_rate": django_filters.OrderingFilter(
+                fields=('-rating','rating'),)
+            }
+
+    if model_name == "Doctor":
+        custome_filter = {
+            "sort_by_rate": django_filters.OrderingFilter(
+                fields=('-rating','rating'),)
+            }
+
 
     if model_name == "Order":
         custome_filter = {'search_by_name': django_filters.CharFilter(
