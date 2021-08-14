@@ -2,10 +2,12 @@ import businessLogic.models as bModels
 from random import randint
 
 from django.conf import settings
-from django.db import models
+# from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.validators import MaxLengthValidator
+
+from django.contrib.gis.db import models
 
 from extendProfile.smshelper import send_sms
 
@@ -51,7 +53,9 @@ class Profile(models.Model):
     status = models.CharField(max_length=10, choices=STATUSES, default="freetrial")
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     telephone_number = models.CharField(max_length=20, blank=True, null=True)
+    # location = models.PointField(blank=True, null=True)
     address = models.TextField(max_length=1000, blank=True, null=True)
+    city = models.CharField(max_length=50, blank=True, null=True)
     description = models.TextField(max_length=1000, blank=True, null=True)
     email = models.EmailField(max_length=40, blank=True, null=True)
 
@@ -62,6 +66,9 @@ class Profile(models.Model):
 class Tutorial(models.Model):
     file = models.FileField(upload_to='', max_length=10000)
 
+
+class DashboardMessage(models.Model):
+    message = models.CharField(max_length=50)
 
 
 class OTP(models.Model):

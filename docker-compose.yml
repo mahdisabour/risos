@@ -2,14 +2,19 @@ version: '3.7'
 
 services:
 
-    # db:
-    #     image: postgres:12.0-alpine
-    #     volumes:
-    #         - postgres_data:/var/lib/postgresql/data/
-    #     env_file:
-    #         - ./.env.prod.db
-    #     ports:
-    #         - "5432:5432"
+    db:
+        image: kartoza/postgis:13-3.1
+        volumes:
+            - postgres_data:/var/lib/postgresql/data/
+            - media_files:/home/app/web/mediafiles
+        # env_file:
+        #     - ./.env.prod.db
+        environment:
+            - POSTGRES_DB=gis
+            - POSTGRES_USER=gis_admin    # Here it's important to keep the same name as the one configured inside ops_settings_docker.yml
+            - POSTGRES_PASSWORD=risos@P@s$word        # Here it's important to keep the same name as the one configured inside ops_settings_docker.yml
+        ports:
+            - "5432:5432"
         
 
     celery:
@@ -19,6 +24,11 @@ services:
         volumes:
             - media_files:/home/app/web/mediafiles
             - .:/home/app/web
+        environment:
+            - POSTGRES_HOST=db
+            - POSTGRES_DB=gis
+            - POSTGRES_USER=gis_admin    # Here it's important to keep the same name as the one configured inside ops_settings_docker.yml
+            - POSTGRES_PASSWORD=risos@P@s$word        # Here it's important to keep the same name as the one configured inside ops_settings_docker.yml
         depends_on:
             - redis
 
@@ -35,6 +45,12 @@ services:
             - REDIS_HOST=redis
         depends_on:
             - redis
+            - db
+        environment:
+            - POSTGRES_HOST=db
+            - POSTGRES_DB=gis
+            - POSTGRES_USER=gis_admin    # Here it's important to keep the same name as the one configured inside ops_settings_docker.yml
+            - POSTGRES_PASSWORD=risos@P@s$word        # Here it's important to keep the same name as the one configured inside ops_settings_docker.yml
         volumes:
             - static_volume:/home/app/web/staticfiles
             - media_files:/home/app/web/mediafiles
@@ -55,33 +71,62 @@ services:
         depends_on:
             - risos
             - celery
+        environment:
+            - POSTGRES_HOST=db
+            - POSTGRES_DB=gis
+            - POSTGRES_USER=gis_admin    # Here it's important to keep the same name as the one configured inside ops_settings_docker.yml
+            - POSTGRES_PASSWORD=risos@P@s$word        # Here it's important to keep the same name as the one configured inside ops_settings_docker.yml
         ports:
             - "4557:4557"
 
-    # nginx:
-    #     image: risos_nginx
-    #     container_name: nginx
-    #     restart: always
-    #     volumes:
-    #         - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
-    #         - static_volume:/home/app/web/staticfiles
-    #         - media_files:/home/app/web/mediafiles
-    #         - ./data/certbot/conf:/etc/letsencrypt
-    #         - ./data/certbot/www:/var/www/certbot
-    #     ports:
-    #         - 80:80
-    #         - 443:443
-    #     depends_on:
-    #         - risos
-    # certbot:
-    #     image: certbot/certbot
-    #     volumes:
-    #         - ./data/certbot/conf:/etc/letsencrypt
-    #         - ./data/certbot/www:/var/www/certbot
-    #         - media_files:/home/app/web/mediafiles
+    nginx:
+        image: risos_nginx
+        container_name: nginx
+        restart: always
+        volumes:
+            - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+            - static_volume:/home/app/web/staticfiles
+            - media_files:/home/app/web/mediafiles
+            - ./data/certbot/conf:/etc/letsencrypt
+            - ./data/certbot/www:/var/www/certbot
+        ports:
+            - 80:80
+            - 443:443
+        environment:
+            - POSTGRES_HOST=db
+            - POSTGRES_DB=gis
+            - POSTGRES_USER=gis_admin    # Here it's important to keep the same name as the one configured inside ops_settings_docker.yml
+            - POSTGRES_PASSWORD=risos@P@s$word        # Here it's important to keep the same name as the one configured inside ops_settings_docker.yml
+        depends_on:
+            - risos
+    certbot:
+        image: certbot/certbot
+        volumes:
+            - ./data/certbot/conf:/etc/letsencrypt
+            - ./data/certbot/www:/var/www/certbot
+            - media_files:/home/app/web/mediafiles
 
 
 volumes:
     static_volume:
     postgres_data:
     media_files:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# - POSTGRES_HOST=db
+#           - POSTGRES_DB=risos_db
+#           - POSTGRES_NAME=postgres
+#           - POSTGRES_USER=admin
+#           - POSTGRES_PASSWORD=risos@P@s$word

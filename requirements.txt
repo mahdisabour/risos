@@ -12,6 +12,7 @@ requests==2.25.1
 celery==5.1.0
 redis==3.5.3
 ippanel==1.1.0
+psycopg2-binary==2.8.6
 graphene-file-upload==1.3.0
 Pillow==8.1.0
 zeep==4.0.0

@@ -13,6 +13,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,7 +26,7 @@ SECRET_KEY = '6#sqbqv6)!e@@awe0+pr+=1$edbl74d28vh83)^72-j!0h^(w*'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["risos", "localhost", "0.0.0.0", "192.106.100.235"]
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
     'graphql_jwt.refresh_token.apps.RefreshTokenConfig',
     'corsheaders',
     'import_export',
+    'django.contrib.gis',
 ]
 
 MIDDLEWARE = [
@@ -90,24 +92,24 @@ WSGI_APPLICATION = 'risos.wsgi.application'
 
 
 
-# DATABASES = {
-#   'default': {
-#     'ENGINE': 'django.db.backends.postgresql',
-#     'HOST': os.environ.get('DB_HOST'),
-#     'NAME': os.environ.get('DB_NAME'),
-#     'USER': os.environ.get('DB_USER'),
-#     'PASSWORD': os.environ.get('DB_PASS'),
-#   }
-# }
-
-
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'data/db.sqlite3',
-    }
+  'default': {
+    'ENGINE': 'django.contrib.gis.db.backends.postgis',
+    'HOST': os.environ.get('POSTGRES_HOST'),
+    'NAME': os.environ.get('POSTGRES_DB'),
+    'USER': os.environ.get('POSTGRES_USER'),
+    'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+  }
 }
+
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'data/db.sqlite3',
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -209,6 +211,3 @@ CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
 
 # letsencrypt
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
-
-

@@ -1,4 +1,4 @@
-FROM python:3.8.5-alpine
+FROM python:3.8.5-slim-buster
 
 # create directory for the app user
 RUN mkdir -p /home/app
@@ -21,29 +21,11 @@ COPY ./requirements.txt $APP_HOME
 WORKDIR $APP_HOME
 
 # install dependencies
-RUN apk update && apk add libpq
+RUN apt-get update 
+RUN apt-get -y install binutils libproj-dev gdal-bin gdal-bin libgdal-dev python3-gdal postgis
 RUN pip install --upgrade pip
-RUN apk update \
-    && apk add --virtual .build-deps libxslt-dev libxml2-dev gcc rust cargo libffi-dev openssl-dev libressl-dev python3-dev musl-dev \
-    && apk add postgresql \
-    && apk add postgresql-dev \
-    && pip install psycopg2 \
-    && apk add jpeg-dev zlib-dev libjpeg \
-    && pip install Pillow \
-    && pip install -r requirements.txt \
-    && find /usr/local \
-        \( -type d -a -name test -o -name tests \) \
-        -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) \
-        -exec rm -rf '{}' + \
-    && runDeps="$( \
-        scanelf --needed --nobanner --recursive /usr/local \
-                | awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' \
-                | sort -u \
-                | xargs -r apk info --installed \
-                | sort -u \
-    )" \    
-    && apk add --virtual .rundeps $runDeps \
-    && apk del .build-deps
+RUN apt-get update \
+    && pip install -r requirements.txt 
 COPY . $APP_HOME
 
 # RUN chown -R app:app $APP_HOME

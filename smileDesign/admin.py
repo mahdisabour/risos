@@ -10,6 +10,8 @@ from import_export.admin import ImportExportModelAdmin
 from import_export import resources
 from .models import Teeth
 
+from django.contrib.gis.admin import OSMGeoAdmin
+from extendProfile.models import Profile
 
 
 class TeethAdmin(admin.ModelAdmin):
@@ -50,6 +52,9 @@ class MySmileCategory(TreeAdmin):
 admin.site.register(SmileCategory, MySmileCategory)
 models = apps.get_models()
 
+
+custome_admin_models = [ServiceCategory, SmileCategory, SmileColor, RefreshToken, Profile]
+
 for model in models:
     if model == ServiceCategory or model == SmileCategory or model == SmileColor or model == RefreshToken:
         continue
@@ -60,3 +65,8 @@ for model in models:
         admin.site.register(model, adminModel)
     except admin.sites.AlreadyRegistered:
         pass
+
+
+# @admin.register(Profile)
+# class ProfileAdmin(OSMGeoAdmin):
+#     list_display = ('phone_number', 'location')

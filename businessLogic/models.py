@@ -234,7 +234,10 @@ def create_patient_pic(sender, instance, created, **kwargs):
                         with open(image_path, "wb") as f:
                             f.write(data)
                         setattr(patient_pic, key, new_path)
-            patient_pic._smile_design = instance._smile_design
+            try:
+                patient_pic._smile_design = instance._smile_design
+            except:
+                pass
             patient_pic.save()
         except:
             pass
@@ -247,13 +250,14 @@ def update_patient_pics(sender, instance, created, **kwargs):
     patient = instance.patient
     try:
         smile_design = instance._smile_design
+        smile_image = instance.smile_image
+        image_url = smile_image.url
+        # ai_response = aiConnection.apply_async((image_url, ))
+        aiConnection.apply_async((image_url, ), link=aiReady.s(smile_design.id, patient.id) )
     except:
-        smile_design = SmileDesignService()
-        smile_design.save()
-    smile_image = instance.smile_image
-    image_url = smile_image.url
-    # ai_response = aiConnection.apply_async((image_url, ))
-    aiConnection.apply_async((image_url, ), link=aiReady.s(smile_design.id, patient.id) )
+        pass
+        # smile_design = SmileDesignService()
+        # smile_design.save()
 
     
 

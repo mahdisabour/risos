@@ -85,6 +85,7 @@ class CreatePatient(CreateUser):
         return CreatePatient(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token)
 
 
+
 class DeletePatient(graphene.Mutation):
     status = graphene.String()
     class Arguments:
@@ -107,7 +108,7 @@ class UpdatePatientPic(graphene.Mutation):
     class Arguments:
         patient_pics = patientPics(required=True)
         patient_id = graphene.Int(required=True)
-        smile_design_id = graphene.Int(required=True)
+        smile_design_id = graphene.Int(required=False)
 
     def mutate(self, info, patient_pics, patient_id, smile_design_id):
         # user_doctor = info.context.user
@@ -115,10 +116,38 @@ class UpdatePatientPic(graphene.Mutation):
         # doctor = Doctor.objects.get(related_profile=profile_doctor)
         patient = Patient.objects.get(id=patient_id)
         patient._patient_pics = patient_pics
-        smile_design = SmileDesignService.objects.get(id=smile_design_id)
-        patient._smile_design = smile_design
+        if smile_design_id:
+            smile_design = SmileDesignService.objects.get(id=smile_design_id)
+            patient._smile_design = smile_design
         patient.save()
         return UpdatePatientPic(status="Success")
+
+
+class patientPicsDeletion(graphene.InputObjectType):
+    smile_image = graphene.Boolean(required=False)
+    full_smile_image = graphene.Boolean(required=False)
+    side_image = graphene.Boolean(required=False)
+    optional_image = graphene.Boolean(required=False)
+
+
+class DeletePatientPic(graphene.Mutation):
+    status = graphene.String()
+    class Arguments:
+        patient_id = graphene.Int(required=True)
+        selected_fields = patientPicsDeletion()
+
+    def mutate(self, info, selected_fields, patient_id):    
+        patient = Patient.objects.get(id=patient_id)
+        patient_pic = patient.patient_pic
+        print(selected_fields)
+        for key, val in selected_fields.items():
+            if val:
+                setattr(patient_pic, key, None)
+
+        patient_pic.save()
+        return DeletePatientPic(status="Success")
+
+
 
 
 class CreateLab(CreateUser):
@@ -330,6 +359,7 @@ class BusinessLogicMutations(graphene.ObjectType):
     create_patient = CreatePatient.Field()
     delete_patient = DeletePatient.Field()
     update_patient_pic = UpdatePatientPic.Field()
+    delete_patient_pic = DeletePatientPic.Field()
     update_order = UpdateOrder.Field()
     create_order = CreateOrder.Field()
     labpic_mutation = LabPicMutation.Field()

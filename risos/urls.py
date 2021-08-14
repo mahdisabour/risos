@@ -25,7 +25,13 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 class PrivateGraphQLView(LoginRequiredMixin, GraphQLView):
     pass
 
+
+
+def trigger_error(request):
+    division_by_zero = 1 / 0
+
 urlpatterns = [
+                path('sentry-debug/', trigger_error),
                 path('admin/', admin.site.urls),
                 # path("graphql/", (csrf_exempt(GraphQLView.as_view(graphiql=True)))),
                 path('graphql/', csrf_exempt(FileUploadGraphQLView.as_view(graphiql=True))),
