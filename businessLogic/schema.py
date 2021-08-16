@@ -4,7 +4,7 @@ from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey
 import django_filters
 from django.db.models import ImageField, CharField
-from django.contrib.gis.db.models.fields import PointField
+# from django.contrib.gis.db.models.fields import PointField
 from graphene import relay, ObjectType, Schema, Field, Int
 from graphene.types import field, interface
 from graphene_django import DjangoObjectType
@@ -17,7 +17,7 @@ from .models import *
 def id_resolver(self, *_):
     return self.id
 
-exempted_field_types = (GenericForeignKey, ImageField, PointField)
+exempted_field_types = (GenericForeignKey, ImageField)
 exempted_field_names = ('_field_status',)
 
 def generate_filter_fields(model):

@@ -2,12 +2,12 @@ import businessLogic.models as bModels
 from random import randint
 
 from django.conf import settings
-# from django.db import models
+from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.validators import MaxLengthValidator
 
-from django.contrib.gis.db import models
+# from django.contrib.gis.db import models
 
 from extendProfile.smshelper import send_sms
 

@@ -1,26 +1,3 @@
-# import numpy as np
-# from sklearn.model_selection import train_test_split
-# from sklearn.preprocessing import StandardScaler
-# from sklearn.neural_network import MLPClassifier
-# from sklearn.neighbors import KNeighborsClassifier
-# from sklearn.svm import SVC
-# from sklearn.gaussian_process import GaussianProcessClassifier
-# from sklearn.gaussian_process.kernels import RBF
-# from sklearn.tree import DecisionTreeClassifier
-# from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
-# from sklearn.naive_bayes import GaussianNB
-# from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
-# from sklearn.ensemble import VotingClassifier
-# import pandas as pd
-# import dlib
-# import os
-# import cv2
-# from scipy.interpolate import CubicSpline
-# import math
-# from joblib import dump, load
-# import time
-
-
 import dlib
 import cv2
 from scipy.interpolate import interp1d
@@ -111,6 +88,7 @@ def removeTeeth(img):
         for w in range(low, high, 1):
             if hsv_img[w,z,1] < thres:
                 nimg[w, z, 3] = 0
+    
     # cv2.imwrite('output.jpg', nimg)
     # scale_percent = 30 # percent of original size
     # width = int(nimg.shape[1] * scale_percent / 100)
