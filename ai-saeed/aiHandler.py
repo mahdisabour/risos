@@ -23,7 +23,7 @@ def get_image_from_url(url):
 
 
 
-def removeTeeth(img):
+def removeTeeth(img, smile_design_id):
     # Load face detector
     # Load face detector
     detector = dlib.get_frontal_face_detector()
@@ -47,6 +47,8 @@ def removeTeeth(img):
         for i in range(20):
             xm.append(shape.part(i+48).x)
             ym.append(shape.part(i+48).y)
+
+    
 
     # The landmarks of the lips
     x_o = [xm[0],xm[11],xm[10],xm[9],xm[8],xm[7],xm[6]]

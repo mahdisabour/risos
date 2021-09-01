@@ -11,20 +11,6 @@ from graphene_django.debug import DjangoDebug
 from graphene_django.filter import DjangoFilterConnectionField
 from .models import *
 
-# Set this to your Django application name
-
-
-# class ReceiverNode(DjangoObjectType):
-#     class Meta:
-#         model = Receiver
-#         filter_fields = "__all__"
-#         interfaces = (relay.Node,)
-
-
-# class notificationQuery(ObjectType):
-#     service = relay.Node.Field(ReceiverNode)
-#     all_service = DjangoFilterConnectionField(ReceiverNode)
-
 
 APPLICATION_NAME = 'notification'
 
@@ -115,7 +101,6 @@ def build_query_objs():
             'all_{model_name}'.format(model_name=model_name):
                 DjangoFilterConnectionField(node, filterset_class=create_model_in_filters(model))
         })
-    # queries['debug'] = Field(DjangoDebug, name='__debug')
     return queries
 
 

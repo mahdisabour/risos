@@ -1,21 +1,14 @@
 # https://github.com/timothyjlaurent/auto-graphene-django/blob/master/auto-graphene-django/graphql.py
 from django.apps import apps
-# from django.contrib.postgres.fields import ArrayField, JSONField
 from django.contrib.contenttypes.fields import GenericForeignKey
 import django_filters
 from django.db.models import ImageField
-# from django.contrib.gis.db.models.fields import PointField
 from graphene import relay, ObjectType, Schema, Field, Int
 from graphene_django import DjangoObjectType
-from graphene_django.debug import DjangoDebug
 from graphene_django.filter import DjangoFilterConnectionField
 
 
-
 custom_model = []
-
-
-# # Set this to your Django application name
 APPLICATION_NAME = 'smileDesign'
 
 
@@ -73,7 +66,7 @@ def create_model_in_filters(model):
     if model_name == "Teeth":
         custome_filter = {'filter_by_color': django_filters.CharFilter(
             field_name='related_smile_color__name', lookup_expr='iexact'),
-            'filter_by_category' : django_filters.CharFilter(
+            'filter_by_category': django_filters.CharFilter(
             field_name='related_smile_category__name', lookup_expr='iexact')
         }
 
@@ -108,14 +101,14 @@ def build_query_objs():
                             Meta=meta_class,
                             _id=Int(name='_id'),
                             resolve__id=id_resolver,
-                        )
-                    )
+            )
+            )
             queries.update({model_name: PlainTextNode.Field(node)})
             queries.update({
                 'all_{model_name}'.format(model_name=model_name):
-                    DjangoFilterConnectionField(node, filterset_class=create_model_in_filters(model))
+                    DjangoFilterConnectionField(
+                        node, filterset_class=create_model_in_filters(model))
             })
-    # queries['debug'] = Field(DjangoDebug, name='__debug')
     return queries
 
 

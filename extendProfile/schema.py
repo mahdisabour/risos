@@ -1,10 +1,8 @@
 from extendProfile.models import Profile
 from django.apps import apps
-# from django.contrib.postgres.fields import ArrayField, JSONField
 from django.contrib.contenttypes.fields import GenericForeignKey
 import django_filters
 from django.db.models import ImageField, CharField
-# from django.contrib.gis.db.models.fields import PointField
 from graphene import relay, ObjectType, Schema, Field, Int
 from graphene_django import DjangoObjectType
 from graphene_django.debug import DjangoDebug
@@ -68,17 +66,9 @@ def create_model_in_filters(model):
         for f in model._meta.get_fields()
         if not isinstance(f, exempted_field_types) and f.name not in exempted_field_names}
 
-    # search_filters = {
-    #     '{name}__search'.format(name=f.name): django_filters.CharFilter(field_name=f.name, lookup_expr='icontains')
-    #     for f in model._meta.get_fields()
-    #     if not isinstance(f, exempted_field_types) and f.name not in exempted_field_names and isinstance(f, CharField)}
-
-    # in_filters.update(search_filters)
-
     fields = [f.name
               for f in model._meta.get_fields()
               if not isinstance(f, exempted_field_types) and f.name not in exempted_field_names]
-    print(fields)
 
     filter_class = type(
         '{model_name}InFilters'.format(model_name=model_name),
@@ -113,7 +103,6 @@ def build_query_objs():
                 'all_{model_name}'.format(model_name=model_name):
                     DjangoFilterConnectionField(node, filterset_class=create_model_in_filters(model))
             })
-    # queries['debug'] = Field(DjangoDebug, name='__debug')
     return queries
 
 

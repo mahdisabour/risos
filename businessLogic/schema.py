@@ -1,11 +1,11 @@
 import django
 from django.apps import apps
-# from django.contrib.postgres.fields import ArrayField, JSONField
 from django.contrib.contenttypes.fields import GenericForeignKey
 import django_filters
 from django.db.models import ImageField, CharField
-# from django.contrib.gis.db.models.fields import PointField
+from django_filters.filters import CharFilter
 from graphene import relay, ObjectType, Schema, Field, Int
+from graphene.relay.connection import Connection
 from graphene.types import field, interface
 from graphene_django import DjangoObjectType
 from graphene_django.debug import DjangoDebug
@@ -26,10 +26,22 @@ def generate_filter_fields(model):
             if not isinstance(f, exempted_field_types) and f.name not in exempted_field_names}
 
 
+class ExtendedConnection(Connection):
+    class Meta:
+        abstract = True
+
+    total_count = Int()
+    edge_count = Int()
+
+    def resolve_total_count(root, info, **kwargs):
+        return root.length
+    def resolve_edge_count(root, info, **kwargs):
+        return len(root.edges)
+
 
 class PlainTextNode(relay.Node):
     class Meta:
-        name = 'businessLogicService'
+        name = 'businessLogicNode'
 
     @staticmethod
     def to_global_id(type, id):
@@ -40,53 +52,26 @@ class PlainTextNode(relay.Node):
         return global_id.split(':')
 
 
-# class DoctorNode(DjangoObjectType):
-#     class Meta:
-#         model = Doctor
-#         filter_fields = generate_filter_fields(Doctor)
-#         interfaces = (PlainTextNode, )
-#         filter_order_by=True
-#     _id=Int(name='_id')
-#     resolve__id=id_resolver
-
-
-# class PatientNode(DjangoObjectType):
-#     class Meta:
-#         model = Patient
-#         filter_fields = generate_filter_fields(Patient)
-#         interfaces = (PlainTextNode, )
-#         filter_order_by = True
-#     _id=Int(name='_id')
-#     resolve__id=id_resolver
-
-
-# class PatientFilter(django_filters.FilterSet):
-#     filter_patient = django_filters.CharFilter(field_name="related_profile__first_name", lookup_expr='icontains')
-
-#     class Meta:
-#         model = Patient
-#         fields = []
-
-
-class BusinessLogicQueryCustom(ObjectType):
-    pass
-#     doctor = PlainTextNode.Field(DoctorNode)
-#     all_doctor = DjangoFilterConnectionField(DoctorNode)
-
-#     patient = PlainTextNode.Field(PatientNode)
-#     all_patient = DjangoFilterConnectionField(PatientNode)
-
-
-
-
-
-# custome query
+# custom_models = ["Lab", "Doctor"]
 custom_models = []
-# custom_models = ["Doctor", "Patient"]
+
+class LabNode(DjangoObjectType):
+    class Meta:
+        model = Lab
+        # Allow for some more advanced filtering here
+        filter_fields = {
+            'related_profile__first_name': ['exact', 'icontains', 'istartswith'],
+        }
+        interfaces = (PlainTextNode, )
 
 
-# Set this to your Django application name
-# auto generate query 
+class CustomeBusinessLogic(graphene.ObjectType):
+    lab = relay.Node.Field(LabNode)
+    all_lab = DjangoFilterConnectionField(LabNode)
+    
+
+
+
 APPLICATION_NAME = 'businessLogic'
 
 class InFilter(django_filters.filters.BaseInFilter, django_filters.filters.CharFilter):
@@ -98,6 +83,7 @@ def create_model_object_meta(model):
                 (object,),
                 dict(model=model,
                      interfaces=(PlainTextNode,),
+                     connection_class = ExtendedConnection,
                      filter_fields=generate_filter_fields(model),
                      filter_order_by=True,
                      )
@@ -110,11 +96,6 @@ def create_model_in_filters(model):
         '{name}__in'.format(name=f.name): InFilter(field_name=f.name, lookup_expr='in')
         for f in model._meta.get_fields()
         if not isinstance(f, exempted_field_types) and f.name not in exempted_field_names}
-
-    search_filters = {
-        '{name}__search'.format(name=f.name): django_filters.CharFilter(field_name=f.name, lookup_expr='icontains')
-        for f in model._meta.get_fields()
-        if not isinstance(f, exempted_field_types) and f.name not in exempted_field_names and isinstance(f, CharField)}
 
     custome_filter = {}
     if model_name == "Patient":
@@ -135,12 +116,21 @@ def create_model_in_filters(model):
                 fields=('-rating','rating'),)
             }
 
-
     if model_name == "Order":
-        custome_filter = {'search_by_name': django_filters.CharFilter(
-            field_name='related_service__related_patient__related_profile__first_name', lookup_expr='icontains')}
+        custome_filter = {
+            'search_by_name': django_filters.CharFilter(
+                field_name='related_service__related_patient__related_profile__first_name', lookup_expr='icontains'
+            ), 
+            'doctor_id': InFilter(
+                field_name='related_service__related_doctor__id', lookup_expr='in'
+            ),
+            'status_startwith': CharFilter(
+                field_name="status", lookup_expr="istartswith"
+            )
+        }
 
-    in_filters.update(search_filters)
+            
+
     in_filters.update(custome_filter)
 
     fields = [f.name
@@ -156,6 +146,7 @@ def create_model_in_filters(model):
         )
     )
     return filter_class
+
 
 
 def build_query_objs():

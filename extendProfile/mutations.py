@@ -1,4 +1,3 @@
-from random import choice
 from businessLogic.models import Doctor, Patient
 import graphene
 import graphql_jwt
@@ -13,6 +12,7 @@ from .models import *
 from graphene_file_upload.scalars import Upload
 from django import forms
 from graphene_django.forms.mutation import DjangoModelFormMutation
+from random import randint
 
 
 
@@ -132,36 +132,6 @@ class CreateUser(graphene.Mutation):
         refresh_token = create_refresh_token(user)
         return CreateUser(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token)
 
-
-
-# class ProfileInput(graphene.InputObjectType):
-#     profile_pic = Upload()
-#     first_name = graphene.String(required=False)
-#     last_name = graphene.String(required=False)
-#     gender = graphene.String(required=False)
-#     age = graphene.Int(required=False)
-#     status = graphene.String(required=False, default_value="freetrial")
-#     phone_number = graphene.String(required=False)
-#     telephone_number = graphene.String(required=False)
-#     address = graphene.String(required=False)
-#     description = graphene.String(required=False)
-#     email = graphene.String(required=False, default_value="")
-
-
-
-# class UpdateProfile(graphene.Mutation):
-#     status = graphene.String()
-#     class Arguments:
-#         id = graphene.ID(required=True)
-#         profile_input = ProfileInput()
-
-#     def mutate(self, info, id, profile_input):
-#         profile = Profile.objects.get(id=id)
-#         for k, v in dict(profile_input).items():
-#             if dict(profile_input)[k]:
-#                 setattr(profile, k, v)
-#         profile.save()
-#         return UpdateProfile(status="success")
 
 
 class UpdateProfile(graphene.Mutation):

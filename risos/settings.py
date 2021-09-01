@@ -92,15 +92,15 @@ WSGI_APPLICATION = 'risos.wsgi.application'
 
 
 
-DATABASES = {
-  'default': {
-    'ENGINE': 'django.contrib.gis.db.backends.postgis',
-    'HOST': os.environ.get('POSTGRES_HOST'),
-    'NAME': os.environ.get('POSTGRES_DB'),
-    'USER': os.environ.get('POSTGRES_USER'),
-    'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-  }
-}
+# DATABASES = {
+#   'default': {
+#     'ENGINE': 'django.contrib.gis.db.backends.postgis',
+#     'HOST': os.environ.get('POSTGRES_HOST'),
+#     'NAME': os.environ.get('POSTGRES_DB'),
+#     'USER': os.environ.get('POSTGRES_USER'),
+#     'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+#   }
+# }
 
 # DATABASES = {
 #   'default': {
@@ -114,12 +114,12 @@ DATABASES = {
 
 
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'data/db.sqlite3',
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'data/db.sqlite3',
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -215,6 +215,7 @@ REDIS_PORT = '6379'
 BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
 BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600} 
 CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+CELERY_BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
 
 
 

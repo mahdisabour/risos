@@ -17,12 +17,6 @@ class CreateDevice(graphene.Mutation):
 
 
     def mutate(self, info, Profile_id, device_id):
-        user = info.context.user
-        print(user.id)
-        # token = info.context.META.get("HTTP_TOKEN")
-        # print(get_payload(token, info.context))
-        # print(token)
-
         profile = Profile.objects.get(id = Profile_id)
         NotifReceiver(
             device_id=device_id,

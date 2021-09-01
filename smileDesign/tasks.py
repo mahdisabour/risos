@@ -3,12 +3,14 @@ import requests
 import base64
 from .models import FaceShape, SmileDesignService
 import os
+from django.core.files.images import get_image_dimensions
 
 @app.task
-def aiConnection(image_url, ai_url="http://ai:4557"):
+def aiConnection(image_url, smile_design_id, ai_url="http://ai:4557"):
     print(f"http://risos:8000{image_url}")
     data = {
         "url": f"http://risos:8000{image_url}",
+        "smile_design_id": smile_design_id,
     }
     response = requests.post(ai_url,json=data)
     return response.json()
@@ -30,9 +32,13 @@ def aiReady(ai_response, smile_design_id, patient_id):
             smile_design.shape = shape_object.first
         smile_design.teeth_less_image = new_path
         smile_design.status = "ready"
+        print("Kiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiir")
+        width, heigth = get_image_dimensions(smile_design.teeth_less_image.file)
+        smile_design.width = width
+        smile_design.heigth = heigth
         smile_design.save()
     else:
-        smile_design.status = 'notready'
+        smile_design.status = 'improper image'
         smile_design.save()
     
     

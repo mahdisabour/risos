@@ -6,7 +6,7 @@ from smileDesign.models import SmileDesignService
 from django.db.models import fields
 from graphene.types import interface
 from graphene.types.inputobjecttype import InputObjectType
-from .models import BadColorReason, Doctor, Invoice, Lab, LabPic, Order, Patient, Service, Tooth, ToothSevice
+from .models import BadColorReason, Doctor, Invoice, Lab, LabPic, Order, Patient, Service, Ticket, Tooth, ToothSevice
 from extendProfile.models import *
 from extendProfile.mutations import CreateUser, UpdateProfile
 from django.db.models import Q
@@ -51,6 +51,7 @@ class CreatePatient(CreateUser):
         profile_doctor_id = graphene.Int(required=True)
 
     def mutate(self, info, **kwargs):
+        # kwargs['phone_number'] = str(randint(10**10, 10**11))
         user = get_user_model()(
             username=kwargs['phone_number'],
             email=kwargs['email'],
@@ -108,16 +109,13 @@ class UpdatePatientPic(graphene.Mutation):
     class Arguments:
         patient_pics = patientPics(required=True)
         patient_id = graphene.Int(required=True)
-        smile_design_id = graphene.Int(required=False)
+        doctor_id = graphene.Int(required=False)
 
-    def mutate(self, info, patient_pics, patient_id, smile_design_id):
-        # user_doctor = info.context.user
-        # profile_doctor = Profile.objects.get(user=user_doctor)
-        # doctor = Doctor.objects.get(related_profile=profile_doctor)
+    def mutate(self, info, patient_pics, patient_id, doctor_id):
         patient = Patient.objects.get(id=patient_id)
         patient._patient_pics = patient_pics
-        if smile_design_id:
-            smile_design = SmileDesignService.objects.get(id=smile_design_id)
+        if doctor_id:
+            smile_design = SmileDesignService.objects.get(patient__id=patient_id, doctor__id=doctor_id)
             patient._smile_design = smile_design
         patient.save()
         return UpdatePatientPic(status="Success")
@@ -198,13 +196,38 @@ class CreateOrder(DjangoModelFormMutation):
         exclude_fields = ("id", )
 
 
+
+# create Invoice
+class InvoiceForm(forms.ModelForm):
+    class Meta:
+        model = Invoice
+        fields = '__all__'
+
+
+class InvoiceType(DjangoObjectType):
+    class Meta:
+        model = Invoice
+
+
+class CreateInvoice(DjangoModelFormMutation):
+    invoice = graphene.Field(InvoiceType)
+
+    class Meta:
+        form_class = InvoiceForm
+        # exclude_fields = ("id", )
+
+
+
+
+
+
 class UpdateOrder(graphene.Mutation):
     status = graphene.String()
 
     class Arguments:
         order_id = graphene.ID(required=True)
         expected_date = graphene.DateTime()
-        actual_date = graphene.DateTime()
+        # actual_date = graphene.DateTime()
         description = graphene.String()
         status = graphene.String()
         finalized_lab = graphene.ID()
@@ -353,6 +376,29 @@ class UpdateLabRate(graphene.Mutation):
         return UpdateLabRate(rate=rate)
 
 
+class CreateTicket(graphene.Mutation):
+    status = graphene.String()
+
+    class Arguments:
+        sender_profile = graphene.Int(required=True)
+        receiver_profile = graphene.Int(required=True)
+        message = graphene.String(required=True)
+        related_order = graphene.Int(required=True)
+    
+    def mutate(self, info, sender_profile, receiver_profile, message, related_order):
+        sender = Profile.objects.get(id=sender_profile)
+        receiver = Profile.objects.get(id=receiver_profile)
+        related_order = Order.objects.get(id=related_order)
+        Ticket(
+            sender=sender,
+            receiver=receiver,
+            related_order=related_order, 
+            message=message
+        ).save()
+        return CreateTicket(status="Success")
+
+
+
 
 class BusinessLogicMutations(graphene.ObjectType):
     create_lab = CreateLab.Field()
@@ -362,11 +408,13 @@ class BusinessLogicMutations(graphene.ObjectType):
     delete_patient_pic = DeletePatientPic.Field()
     update_order = UpdateOrder.Field()
     create_order = CreateOrder.Field()
+    create_invoice = CreateInvoice.Field()
     labpic_mutation = LabPicMutation.Field()
     update_lab_rate = UpdateLabRate.Field()
     create_service = CreateService.Field()
     tooth_mutation = ToothMutation.Field()
     tooth_mutation_json = ToothMutationJson.Field()
+    create_ticker = CreateTicket.Field()
 
 
     
