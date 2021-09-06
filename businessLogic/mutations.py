@@ -52,12 +52,15 @@ class CreatePatient(CreateUser):
 
     def mutate(self, info, **kwargs):
         # kwargs['phone_number'] = str(randint(10**10, 10**11))
-        user = get_user_model()(
-            username=kwargs['phone_number'],
-            email=kwargs['email'],
-        )
-        user.set_password(kwargs['phone_number'])
-        user.save()
+        if User.objects.filter(username=kwargs['phone_number']).exists():
+            user = User.objects.get(username=kwargs['phone_number'])
+        else:
+            user = get_user_model()(
+                username=kwargs['phone_number'],
+                email=kwargs['email'],
+            )
+            user.set_password(kwargs['phone_number'])
+            user.save()
         
         profile_obj = Profile.objects.get(user=user.id)
         token = get_token(user)
@@ -356,7 +359,7 @@ class ToothMutationJson(graphene.Mutation):
             tooth.tooth_service = tooth_service
             tooth.cl = cl
             tooth.save()
-            return ToothMutationJson(status="Success")
+        return ToothMutationJson(status="Success")
         
 
 

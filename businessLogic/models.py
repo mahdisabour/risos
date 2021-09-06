@@ -156,7 +156,7 @@ class Order(models.Model):
     created_at = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')
     updated_at = models.DateField(auto_now=True, verbose_name='Updated at')
-    expected_date = models.DateTimeField(
+    expected_date = models.DateField(
         blank=True, null=True, default=datetime.today() + timedelta(days=60))
     description = models.TextField(blank=True, null=True, max_length=500)
     STATUSES = (
@@ -292,6 +292,8 @@ def update_patient_pics(sender, instance, created, **kwargs):
     patient = instance.patient
     try:
         smile_design = instance._smile_design
+        smile_design.status = "notready"
+        smile_design.save()
         smile_image = instance.smile_image
         image_url = smile_image.url
         aiConnection.apply_async(

@@ -32,9 +32,9 @@ class UpdateSmileDesign(graphene.Mutation):
         smile_design.state = smile_design_state
         if smile_design_images:
             if "teeth_less_image" in smile_design_images.keys():
-                smile_design.teeth_less_image = smile_design_images["teeth_less_image"]
+                smile_design.smile_image_result = smile_design_images["teeth_less_image"]
             if "smile_image_result" in smile_design_images.keys():
-                smile_design.teeth_less_image = smile_design_images["smile_image_result"]
+                smile_design.smile_image_result = smile_design_images["smile_image_result"]
             smile_design.save()
         else:
             smile_design.save()

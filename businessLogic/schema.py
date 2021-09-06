@@ -3,7 +3,7 @@ from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey
 import django_filters
 from django.db.models import ImageField, CharField
-from django_filters.filters import CharFilter
+from django_filters.filters import CharFilter, NumberFilter
 from graphene import relay, ObjectType, Schema, Field, Int
 from graphene.relay.connection import Connection
 from graphene.types import field, interface
@@ -173,6 +173,22 @@ def build_query_objs():
                         node, filterset_class=create_model_in_filters(model))
             })
     return queries
+
+
+
+class ReportNode(graphene.ObjectType):
+    name = graphene.String()
+    number = graphene.Int()
+
+class GetReportByLabId(graphene.ObjectType):
+    get_report = graphene.List(ReportNode,lab_id=graphene.Int())
+
+    def resolve_get_report(self, info, lab_id):
+        data = Order.objects.all().values('status').annotate(total=models.Count('status', filter=models.Q(finalized_lab__id=lab_id))).order_by('total')
+        output = []
+        for item in data:
+            output.append(ReportNode(name=item["status"], number=item["total"]))
+        return output
 
 
 BusinessLogicQuery = type('Query', (ObjectType,), build_query_objs())
