@@ -4,6 +4,12 @@ curl https://api.risos.co/graphql/ \
   -F 0=@testtest.jpeg
 
 
+curl https://api.risos.co/graphql/ \
+  -F operations='{ "query": "mutation ($profilePic: Upload!) { updatePatientPic(patientPics: {smileImage:$profilePic fullSmileImage:$profilePic sideImage:$profilePic} patientId:8){status} }", "variables": { "profilePic": null } }' \
+  -F map='{ "0": ["variables.profilePic"] }' \
+  -F 0=@testtest.jpeg
+
+
 
 curl http://localhost:8000/graphql/ \
   -F operations='{ "query": "mutation ($profilePic: Upload!) { updateProfile( id:\"1\", profilePic:$profilePic){status} }", "variables": { "profilePic": null } }' \

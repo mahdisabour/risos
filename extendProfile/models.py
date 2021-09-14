@@ -44,8 +44,7 @@ class Profile(models.Model):
     )
     gender = models.CharField(
         max_length=10, choices=GENDER, null=True, blank=True)
-    age = models.IntegerField(
-        validators=[MaxLengthValidator(100)], blank=True, null=True)
+    age = models.IntegerField(blank=True, null=True)
     STATUSES = (
         ('active', 'Active'),
         ('deactive', 'Deactive'),

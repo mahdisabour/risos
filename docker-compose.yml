@@ -1,99 +1,100 @@
 version: '3.7'
 
 services:
-    db:
-        image: kartoza/postgis:13-3.1
-        volumes:
-            - postgres_data:/var/lib/postgresql/data/
-            - media_files:/home/app/web/mediafiles
-        env_file:
-            - ./db.env
-        environment: 
-          - POSTGRES_PASSWORD=risos@P@s$word
-        ports:
-            - "5432:5432"
+    # db:
+    #     image: kartoza/postgis:13-3.1
+    #     volumes:
+    #         - postgres_data:/var/lib/postgresql/data/
+    #         - media_files:/home/app/web/mediafiles
+    #     env_file:
+    #         - ./db.env
+    #     environment: 
+    #       - POSTGRES_PASSWORD=risos@P@s$word
+    #     ports:
+    #         - "5432:5432"
         
 
-    celery:
-        restart: always
-        image: risos
-        command: celery -A risos worker --loglevel=debug --concurrency=8
-        volumes:
-            - media_files:/home/app/web/mediafiles
-            - .:/home/app/web
-        env_file:
-            - ./db.env
-        environment: 
-            - POSTGRES_HOST=db
-            - POSTGRES_PASSWORD=risos@P@s$word
-        depends_on:
-            - redis
+    # celery:
+    #     restart: always
+    #     image: risos
+    #     command: celery -A risos worker --loglevel=debug --concurrency=8
+    #     volumes:
+    #         - media_files:/home/app/web/mediafiles
+    #         - .:/home/app/web
+    #     env_file:
+    #         - ./db.env
+    #     environment: 
+    #         - POSTGRES_HOST=db
+    #         - POSTGRES_PASSWORD=risos@P@s$word
+    #     depends_on:
+    #         - redis
 
 
-    risos:
-        image: risos
-        container_name: risos
-        command: >
-            sh -c "python manage.py runserver 0.0.0.0:8000"
+    # risos:
+    #     image: risos
+    #     container_name: risos
+    #     command: >
+    #         sh -c "python manage.py runserver 0.0.0.0:8000"
 
-        ports:
-            - "8000:8000"
-        environment:
-            - REDIS_HOST=redis
-        depends_on:
-            - redis
-            - db
-        env_file:
-            - ./db.env
-        environment: 
-            - POSTGRES_HOST=db
-            - POSTGRES_PASSWORD=risos@P@s$word
-        volumes:
-            - static_volume:/home/app/web/staticfiles
-            - media_files:/home/app/web/mediafiles
-            - .:/home/app/web/
-            - /data/db.sqlite3:/home/app/web/db.sqlite3/
+    #     ports:
+    #         - "8000:8000"
+    #     environment:
+    #         - REDIS_HOST=redis
+    #     depends_on:
+    #         - redis
+    #         - db
+    #     env_file:
+    #         - ./db.env
+    #     environment: 
+    #         - POSTGRES_HOST=db
+    #         - POSTGRES_PASSWORD=risos@P@s$word
+    #     volumes:
+    #         - static_volume:/home/app/web/staticfiles
+    #         - media_files:/home/app/web/mediafiles
+    #         - .:/home/app/web/
+    #         - /data/db.sqlite3:/home/app/web/db.sqlite3/
             
     redis:
-        image: redis:latest
+        build:
+            context: ./redis/
         ports:
             - "6379:6379"
 
-    nginx:
-        image: risos_nginx
-        container_name: nginx
-        restart: always
-        volumes:
-            - static_volume:/home/app/web/staticfiles
-            - media_files:/home/app/web/mediafiles
-            - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
-            - ./data/certbot/conf:/etc/letsencrypt
-            - ./data/certbot/www:/var/www/certbot
-        ports:
-            - 80:80
-            - 443:443
-        env_file:
-            - ./db.env
-        depends_on:
-            - risos
-    ai:
-        image: ai
-        container_name: ai
-        command: uvicorn main:app --host 0.0.0.0 --port 4557 --reload 
-        volumes:
-            - ./ai-saeed:/app
-        depends_on:
-            - risos
-            - celery
-        ports:
-            - "4557:4557"
+    # nginx:
+    #     image: risos_nginx
+    #     container_name: nginx
+    #     restart: always
+    #     volumes:
+    #         - static_volume:/home/app/web/staticfiles
+    #         - media_files:/home/app/web/mediafiles
+    #         - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+    #         - ./data/certbot/conf:/etc/letsencrypt
+    #         - ./data/certbot/www:/var/www/certbot
+    #     ports:
+    #         - 80:80
+    #         - 443:443
+    #     env_file:
+    #         - ./db.env
+    #     depends_on:
+    #         - risos
+    # ai:
+    #     image: ai
+    #     container_name: ai
+    #     command: uvicorn main:app --host 0.0.0.0 --port 4557 --reload 
+    #     volumes:
+    #         - ./ai-saeed:/app
+    #     depends_on:
+    #         - risos
+    #         - celery
+    #     ports:
+    #         - "4557:4557"
 
-    certbot:
-        image: certbot/certbot
-        volumes:
-            - ./data/certbot/conf:/etc/letsencrypt
-            - ./data/certbot/www:/var/www/certbot
-            - media_files:/home/app/web/mediafiles
+    # certbot:
+    #     image: certbot/certbot
+    #     volumes:
+    #         - ./data/certbot/conf:/etc/letsencrypt
+    #         - ./data/certbot/www:/var/www/certbot
+    #         - media_files:/home/app/web/mediafiles
 
 
 volumes:

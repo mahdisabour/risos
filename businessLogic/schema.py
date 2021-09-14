@@ -99,8 +99,14 @@ def create_model_in_filters(model):
 
     custome_filter = {}
     if model_name == "Patient":
-        custome_filter = {'search_by_name': django_filters.CharFilter(
-            field_name='related_profile__first_name', lookup_expr='icontains')}
+        custome_filter = {
+            'search_by_name': django_filters.CharFilter(
+                field_name='related_profile__first_name', lookup_expr='icontains'
+                ),
+            'profile_id': InFilter(
+                field_name="related_profile__id", lookup_expr='in'
+                )
+            }
 
     if model_name == "Lab":
         custome_filter = {

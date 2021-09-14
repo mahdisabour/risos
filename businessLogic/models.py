@@ -67,10 +67,10 @@ class Patient(SoftDeleteModel):
     related_profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
     doctor = models.ManyToManyField(
         Doctor,
-        through='Service',
-        through_fields=('related_patient', 'related_doctor'),
+        # through='Service',
+        # through_fields=('related_patient', 'related_doctor'),
     )
-    # patient_pic = models.OneToOneField("businessLogic.PatientPic", on_delete=models.CASCADE, blank=True, null=True, related_name="patient")
+    patient_pic = models.OneToOneField("businessLogic.PatientPic", on_delete=models.CASCADE, blank=True, null=True, related_name="patient")
     created_at = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Updated at')

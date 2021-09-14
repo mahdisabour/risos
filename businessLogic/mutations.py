@@ -39,7 +39,6 @@ class patientPics(graphene.InputObjectType):
 
 
 class CreatePatient(CreateUser):
-
     class Arguments:
         patient_pics = patientPics(required=False)
         phone_number = graphene.String(required=True)
@@ -48,7 +47,8 @@ class CreatePatient(CreateUser):
         email = graphene.String(required=False, default_value="")
         address = graphene.String(required=False)
         description = graphene.String(required=False)
-        profile_doctor_id = graphene.Int(required=True)
+        profile_doctor_id = graphene.Int(required=False)
+        password = graphene.String(required=False)
 
     def mutate(self, info, **kwargs):
         # kwargs['phone_number'] = str(randint(10**10, 10**11))
@@ -59,9 +59,12 @@ class CreatePatient(CreateUser):
                 username=kwargs['phone_number'],
                 email=kwargs['email'],
             )
+        if kwargs["password"]:
+            user.set_password(kwargs['password'])
+        else:
             user.set_password(kwargs['phone_number'])
-            user.save()
-        
+        user.save()
+        print(kwargs["password"])
         profile_obj = Profile.objects.get(user=user.id)
         token = get_token(user)
         refresh_token = create_refresh_token(user)
@@ -73,19 +76,25 @@ class CreatePatient(CreateUser):
         profile_obj.description = kwargs["description"]
         profile_obj.save()
 
-        doctor = Doctor.objects.get(
-            related_profile=Profile.objects.get(id=kwargs["profile_doctor_id"]))
+        patient = Patient.objects.get(related_profile=profile_obj, )
+        
+        if kwargs["profile_doctor_id"]:
+            doctor = Doctor.objects.get(
+                related_profile=Profile.objects.get(id=kwargs["profile_doctor_id"]))
+            if not doctor in patient.doctor.all():
+                patient.doctor.add(doctor)
 
-        patient = Patient.objects.get(related_profile=profile_obj)
         
         if kwargs["patient_pics"]:
             patient._patient_pics = kwargs["patient_pics"]
-            smile_design = SmileDesignService(patient=patient, doctor=doctor)
+            if kwargs["profile_doctor_id"]:
+                smile_design = SmileDesignService(patient=patient, doctor=doctor)
+            else:
+                smile_design = SmileDesignService(patient=patient)
             smile_design.save()
             patient._smile_design = smile_design
             patient.save()
         
-        patient.doctor.add(doctor)
         return CreatePatient(user=user.id, profile=profile_obj.id, token=token, refresh_token=refresh_token)
 
 
@@ -120,6 +129,14 @@ class UpdatePatientPic(graphene.Mutation):
         if doctor_id:
             smile_design = SmileDesignService.objects.get(patient__id=patient_id, doctor__id=doctor_id)
             patient._smile_design = smile_design
+        else:
+            if SmileDesignService.objects.filter(patient__id=int(patient_id)).exists():
+                patient._smile_design = SmileDesignService.objects.get(patient__id=int(patient_id))
+            else:
+                smile_design = SmileDesignService(patient=patient)
+                smile_design.save()
+                patient._smile_design = smile_design
+                
         patient.save()
         return UpdatePatientPic(status="Success")
 

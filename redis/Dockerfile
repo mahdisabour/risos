@@ -1,5 +1,4 @@
-FROM redis:alpine
-RUN addgroup -S app && adduser -S app -G app
-RUN chown -R app:app /etc
-USER app
+FROM redis
+COPY redis.conf /usr/local/etc/redis/redis.conf
+RUN chmod 644 /usr/local/etc/redis/redis.conf
 CMD [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
