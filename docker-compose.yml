@@ -31,6 +31,7 @@ services:
 
 
     risos:
+        restart: always
         image: risos
         container_name: risos
         command: >
