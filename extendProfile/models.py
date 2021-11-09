@@ -2,7 +2,8 @@ import businessLogic.models as bModels
 from random import randint
 
 from django.conf import settings
-from django.db import models
+# from django.db import models
+from django.contrib.gis.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.validators import MaxLengthValidator
@@ -81,6 +82,11 @@ class OTP(models.Model):
 
     def __str__(self):
         return f"{self.profile.user.username}"
+
+
+class Location(models.Model):
+    point = models.PointField(blank=True, null=True)
+    related_profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
 
 
 @receiver(post_save, sender=OTP)

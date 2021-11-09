@@ -13,6 +13,11 @@ class Image(BaseModel):
 app = FastAPI()
 
 
+detector = dlib.get_frontal_face_detector()
+predictor_path = "./shape_predictor_68_face_landmarks.dat"
+predictor = dlib.shape_predictor(predictor_path)
+
+
 @app.post("/")
 def root(image:Image):
     print(f"request is now here in root function")
@@ -22,7 +27,8 @@ def root(image:Image):
     
     if not resp["error"]:
         try:
-            img = removeTeeth(resp["image"], smile_design_id)
+            # img = removeTeeth(resp["image"], smile_design_id)
+            img = removeTeeth(resp["image"], smile_design_id, detector, predictor)
             img_base_64 = cv2Base64(img)
             # img_base_64 = "data:image/png;base64, " +  str(img_base_64)
             print(smile_design_id, "-> 200")

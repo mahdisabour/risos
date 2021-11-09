@@ -4,10 +4,11 @@ from graphql_jwt.refresh_token.models import RefreshToken
 from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 from businessLogic.models import ServiceCategory
+from extendProfile.models import Location
 from smileDesign.models import SmileCategory, SmileColor
 from import_export.admin import ImportExportModelAdmin
 from import_export import resources
-
+from django.contrib.gis.admin import OSMGeoAdmin
 from django.db.models import ManyToManyField
 
 
@@ -45,7 +46,12 @@ admin.site.register(SmileCategory, MySmileCategory)
 models = apps.get_models()
 
 
-custome_admin_models = [ServiceCategory, SmileCategory, SmileColor, RefreshToken]
+@admin.register(Location)
+class LocationAdmin(OSMGeoAdmin):
+    list_display = ('related_profile', 'point')
+
+
+custome_admin_models = [ServiceCategory, SmileCategory, SmileColor, RefreshToken, Location]
 
 
 

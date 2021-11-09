@@ -1,5 +1,5 @@
 curl https://api.risos.co/graphql/ \
-  -F operations='{ "query": "mutation ($profilePic: Upload!) { createPatient(patientPics: {smileImage:$profilePic fullSmileImage:$profilePic sideImage:$profilePic} phoneNumber:\"27513102152\" profileDoctorId:1){profile} }", "variables": { "profilePic": null } }' \
+  -F operations='{ "query": "mutation ($profilePic: Upload!) { createPatient(patientPics: {smileImage:$profilePic fullSmileImage:$profilePic sideImage:$profilePic} phoneNumber:\"275151021157\" profileDoctorId:1){profile} }", "variables": { "profilePic": null } }' \
   -F map='{ "0": ["variables.profilePic"] }' \
   -F 0=@testtest.jpeg
 

@@ -132,6 +132,9 @@ class UpdatePatientPic(graphene.Mutation):
         else:
             if SmileDesignService.objects.filter(patient__id=int(patient_id)).exists():
                 patient._smile_design = SmileDesignService.objects.get(patient__id=int(patient_id))
+                patient._smile_design.status = 'notready'
+                patient._smile_design.teeth_less_image = ''
+                patient._smile_design.save()
             else:
                 smile_design = SmileDesignService(patient=patient)
                 smile_design.save()

@@ -1,3 +1,5 @@
+from django.contrib.gis.db.models.fields import PointField
+from django.contrib.gis.geos import Point
 from businessLogic.models import Doctor, Patient
 import graphene
 import graphql_jwt
@@ -13,7 +15,6 @@ from graphene_file_upload.scalars import Upload
 from django import forms
 from graphene_django.forms.mutation import DjangoModelFormMutation
 from random import randint
-
 
 
 # Graphene will automatically map the Category model's fields onto the CategoryNode.
@@ -160,6 +161,28 @@ class UpdateProfile(graphene.Mutation):
         return UpdateProfile(status="success")
 
 
+class LocationMutation(graphene.Mutation):
+    status = graphene.String()
+
+    class Arguments:
+        profile_id = graphene.Int(required=True)
+        longitude = graphene.Float(required=True)
+        latitude = graphene.Float(required=True)
+
+    def mutate(self, info, profile_id, longitude, latitude):
+        location = None
+        if Location.objects.filter(related_profile__id=profile_id).exists():
+            location = Location.objects.get(related_profile__id=profile_id)
+        else:
+            profile = Profile.objects.get(id=profile_id)
+            location = Location(related_profile=profile)
+        
+        point = Point(longitude, latitude, srid=4326)
+        location.point = point
+        location.save()
+        return LocationMutation(status="success") 
+
+
 class ObtainJSONWebToken(graphql_jwt.JSONWebTokenMutation):
     profile = graphene.String()
     @classmethod
@@ -178,3 +201,4 @@ class BaseMutation(graphene.ObjectType):
     update_profile = UpdateProfile.Field()
     change_password = ChangePassword.Field()
     forget_pass = ForgetPass.Field()
+    location_mutation = LocationMutation.Field()
