@@ -211,8 +211,8 @@ class PatientPic(models.Model):
     full_smile_image = models.ImageField(blank=True, null=True)
     side_image = models.ImageField(blank=True, null=True)
     optional_image = models.ImageField(blank=True, null=True)
-    patient = models.OneToOneField(
-        Patient, on_delete=models.CASCADE, blank=True, null=True, related_name="patient_pic")
+    # patient = models.OneToOneField(
+    #     Patient, on_delete=models.CASCADE, blank=True, null=True, related_name="patient_pic")
 
 
 class Log(models.Model):

@@ -92,34 +92,34 @@ WSGI_APPLICATION = 'risos.wsgi.application'
 
 
 
-# DATABASES = {
-#   'default': {
-#     'ENGINE': 'django.contrib.gis.db.backends.postgis',
-#     'HOST': os.environ.get('POSTGRES_HOST'),
-#     'NAME': os.environ.get('POSTGRES_DB'),
-#     'USER': os.environ.get('POSTGRES_USER'),
-#     'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-#   }
-# }
-
-# DATABASES = {
-#   'default': {
-#     'ENGINE': 'django.contrib.gis.db.backends.postgis',
-#     'HOST': os.environ.get('POSTGRES_HOST'),
-#     'NAME': os.environ.get('POSTGRES_DB'),
-#     'USER': os.environ.get('POSTGRES_USER'),
-#     'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-#   }
-# }
-
-
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'data/db.sqlite3',
-    }
+  'default': {
+    'ENGINE': 'django.contrib.gis.db.backends.postgis',
+    'HOST': os.environ.get('POSTGRES_HOST'),
+    'NAME': os.environ.get('POSTGRES_DB'),
+    'USER': os.environ.get('POSTGRES_USER'),
+    'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+  }
 }
+
+# DATABASES = {
+#   'default': {
+#     'ENGINE': 'django.contrib.gis.db.backends.postgis',
+#     'HOST': os.environ.get('POSTGRES_HOST'),
+#     'NAME': os.environ.get('POSTGRES_DB'),
+#     'USER': os.environ.get('POSTGRES_USER'),
+#     'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+#   }
+# }
+
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'data/db.sqlite3',
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
